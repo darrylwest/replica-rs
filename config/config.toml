@@ -1,8 +1,9 @@
-name = "piedmont-keys-client"
-service_scheme = "http"
-service_host = "piedmont.local"
-service_port = 28200
-connect_timeout = 3 # seconds
+name = "tiburon-replica"
+version = "0.1.1"
+dryrun = false
+home = ".replica"
 logging_config = "config/console.yaml"
-apikey = "3678fde6af84c28f93667fd9623ae6df"
-session = "8NUs7e2uyYV2snc7"
+source_folders = ["photos", "Music"]
+targets = ["dpw@plaza.local:/Volumes/plaza/tiburon", "dpw@piedmont.local:backups", "dpw@orinda.local:backups"]
+compress = false
+encrypt = false
