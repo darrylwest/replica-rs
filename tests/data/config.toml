@@ -1,0 +1,9 @@
+name = "tiburon-replica"
+version = "0.1.1"
+dryrun = false
+home = ".replica"
+logging_config = "config/console.yaml"
+source_folders = ["photos", "Music"]
+targets = ["dpw@plaza.local:/Volumes/plaza/tiburon", "dpw@piedmont.local:backups", "dpw@orinda.local:backups"]
+compress = false
+encrypt = false
