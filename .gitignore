@@ -1,0 +1,7 @@
+/target
+logs/*.log
+coverage/
+.env
+*.pid
+*.pem
+
