@@ -27,7 +27,7 @@ docs:
 
 # run the debug app
 run:
-    clear && cargo run --bin job_service
+    clear && cargo run
 
 # build the release
 release:
