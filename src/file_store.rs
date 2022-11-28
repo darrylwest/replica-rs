@@ -11,9 +11,18 @@ use tokio::sync::{mpsc, oneshot};
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct FileModel {
     path: String,
-    current_hash: String,
-    old_hash: String,
-    last_saved_at: NaiveDateTime,
+    hash: String,
+    last_saved: Option<NaiveDateTime>,
+}
+
+impl FileModel {
+    pub fn new(path: &str, hash: &str) -> FileModel {
+        FileModel {
+            path: path.to_string(),
+            hash: hash.to_string(),
+            last_saved: None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -22,6 +31,7 @@ pub enum Command {
     Put(FileModel, oneshot::Sender<String>),
     Delete(String, oneshot::Sender<String>),
     List(oneshot::Sender<Vec<FileModel>>),
+    SaveDb(oneshot::Sender<String>),
 }
 
 #[derive(Debug)]
@@ -49,7 +59,7 @@ impl FileStore {
                         info!("put file model: {:?}", &model);
                         let file_model = model.clone();
                         map.insert(model.path, file_model);
-                        let _ = tx.send("ok".to_string());
+                        let _ = tx.send("ok".into());
                     }
                     Command::Get(path, tx) => {
                         info!("get file model: {}", &path);
@@ -64,12 +74,14 @@ impl FileStore {
                         let _ = tx.send("ok".into());
                     }
                     Command::List(tx) => {
-                        let mut list = Vec::with_capacity(map.len());
-                        for (_, value) in map.iter() {
-                            list.push(value.clone());
-                        }
-
+                        let list: Vec<FileModel> = map.values().cloned().collect();
                         let _ = tx.send(list);
+                    }
+                    Command::SaveDb(tx) => {
+                        let json = serde_json::to_string(&map).expect("a json map");
+                        info!("json: {}", json);
+
+                        let _ = tx.send("ok".into());
                     }
                 }
 
@@ -86,6 +98,7 @@ impl FileStore {
         self.req_sender.clone()
     }
 
+    /// load the file models db from json file
     pub fn load_file_db(_filename: &str) -> HashMap<String, FileModel> {
         // load the json file and insert into map
         let map: HashMap<String, FileModel> = HashMap::new();
@@ -103,5 +116,34 @@ mod tests {
         let db = FileStore::load_file_db("tests/data/filedb.json");
 
         assert_eq!(db.len(), 0);
+    }
+
+    #[test]
+    fn save_db() {
+        let map = create_db();
+
+        let json = serde_json::to_string(&map).unwrap();
+        println!("map: {}", json);
+    }
+
+    #[test]
+    fn list() {
+        let map = create_db();
+
+        let list: Vec<FileModel> = map.values().cloned().collect();
+        println!("vec: {:?}", list);
+
+        assert_eq!(list.len(), map.len())
+    }
+
+    fn create_db() -> HashMap<String, FileModel> {
+        let mut map: HashMap<String, FileModel> = HashMap::new();
+
+        for idx in 1..=5 {
+            let model = FileModel::new(&format!("file-{}", idx), "xxxxxxx");
+            map.insert(model.path.to_string(), model.clone());
+        }
+
+        map
     }
 }
