@@ -1,9 +1,10 @@
+/// File Store - a small database of file names and hash values
+///
 use crate::config::Config;
 use chrono::naive::NaiveDateTime;
 use hashbrown::HashMap;
-/// File Store - a small database of file names and hash values
-///
 use log::info;
+use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 use tokio::sync::{mpsc, oneshot};
@@ -16,12 +17,23 @@ pub struct FileModel {
 }
 
 impl FileModel {
-    pub fn new(path: &str, hash: &str) -> FileModel {
+    pub fn new(path: &str) -> FileModel {
         FileModel {
-            path: path.to_string(),
-            hash: hash.to_string(),
+            path: path.into(),
+            hash: "".into(),
             last_saved: None,
         }
+    }
+
+    /// calc the file's hash
+    pub fn calc_hash(&self) -> String {
+        let mut hasher = sha::Sha256::new();
+
+        hasher.update(b"this is a test");
+
+        let hash = hasher.finish();
+
+        hex::encode(hash)
     }
 }
 
@@ -136,11 +148,19 @@ mod tests {
         assert_eq!(list.len(), map.len())
     }
 
+    #[test]
+    fn calc_hash() {
+        let model = FileModel::new("config/config.toml");
+        let hash = model.calc_hash();
+
+        println!("hash: {}", hash);
+    }
+
     fn create_db() -> HashMap<String, FileModel> {
         let mut map: HashMap<String, FileModel> = HashMap::new();
 
         for idx in 1..=5 {
-            let model = FileModel::new(&format!("file-{}", idx), "xxxxxxx");
+            let model = FileModel::new(&format!("file-{}", idx));
             map.insert(model.path.to_string(), model.clone());
         }
 
