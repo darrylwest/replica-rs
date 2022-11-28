@@ -25,12 +25,10 @@ impl FileModel {
         }
     }
 
-    /// calc the file's hash
-    pub fn calc_hash(&self) -> String {
+    /// calc the file's hash in hex format
+    pub fn calc_hash(&self, content: &[u8]) -> String {
         let mut hasher = sha::Sha256::new();
-
-        hasher.update(b"this is a test");
-
+        hasher.update(content);
         let hash = hasher.finish();
 
         hex::encode(hash)
@@ -151,7 +149,8 @@ mod tests {
     #[test]
     fn calc_hash() {
         let model = FileModel::new("config/config.toml");
-        let hash = model.calc_hash();
+        let content = std::fs::read("target/debug/replica").unwrap();
+        let hash = model.calc_hash(content.as_slice());
 
         println!("hash: {}", hash);
     }
