@@ -4,6 +4,7 @@
 use anyhow::Result;
 use log::info;
 use replica::config::Config;
+use replica::file_store::FileStore;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -13,6 +14,7 @@ async fn main() -> Result<()> {
     info!("replica config: {:?}", config);
 
     // start the db service (redis?)
+    let _filedb = FileStore::new(&config);
 
     // create the file reader
 
