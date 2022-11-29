@@ -6,6 +6,7 @@ use log::{debug, info};
 use std::env;
 use std::path::PathBuf;
 use walkdir::WalkDir;
+use crate::file_store::FileModel;
 
 pub struct FileWalker {
     config: Config,
@@ -22,9 +23,9 @@ impl FileWalker {
     }
 
     /// walk all the folders and files specified in config source folders and files
-    pub fn walk_files(&self) -> Result<Vec<PathBuf>> {
+    pub fn walk_files(&self) -> Result<Vec<FileModel>> {
         info!("walk the folders and files");
-        let mut files: Vec<PathBuf> = Vec::new();
+        let mut files: Vec<FileModel> = Vec::new();
 
         for file in self.config.files.iter() {
             let pbuf: PathBuf = [&self.home, file].iter().collect();
@@ -32,7 +33,13 @@ impl FileWalker {
             let path = pbuf.as_path();
             if path.is_file() && path.exists() {
                 debug!("{}", &pbuf.display());
-                files.push(pbuf);
+                let meta = path.metadata()?;
+                let modified = meta.modified()?;
+                let modified = modified.duration_since(std::time::SystemTime::UNIX_EPOCH)?.as_micros() as u64;
+                let len = meta.len();
+
+                let model = FileModel::from(pbuf, len, modified);
+                files.push(model);
             }
         }
 
@@ -40,8 +47,8 @@ impl FileWalker {
     }
 
     /// walk all the source folders and gather the files
-    pub fn walk_folders(&self) -> Result<Vec<PathBuf>> {
-        let mut files: Vec<PathBuf> = Vec::new();
+    pub fn walk_folders(&self) -> Result<Vec<FileModel>> {
+        let mut files: Vec<FileModel> = Vec::new();
 
         for folder in self.config.source_folders.iter() {
             let fname: PathBuf = [&self.home, folder].iter().collect();
@@ -59,7 +66,8 @@ impl FileWalker {
                     let modified = meta.modified()?;
                     let modified = modified.duration_since(std::time::SystemTime::UNIX_EPOCH)?;
                     debug!("{} {} {}", &pbuf.display(), meta.len(), modified.as_micros());
-                    files.push(pbuf);
+                    let model = FileModel::from(pbuf, meta.len(), modified.as_micros() as u64);
+                    files.push(model);
                 }
             }
         }

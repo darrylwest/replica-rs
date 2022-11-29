@@ -17,6 +17,7 @@ pub struct Config {
     pub source_folders: Vec<String>,
     pub targets: Vec<String>,
     pub files: Vec<String>,
+    pub dbfile: String,
     pub compress: bool,
     pub encrypt: bool,
 }
@@ -50,6 +51,7 @@ impl Config {
             source_folders: self.source_folders.clone(),
             targets: self.targets.clone(),
             files: self.files.clone(),
+            dbfile: self.dbfile.clone(),
             compress: self.compress,
             encrypt: self.encrypt,
         }

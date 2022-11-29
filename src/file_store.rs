@@ -1,17 +1,19 @@
 /// File Store - a small database of file names and hash values
 ///
-use crate::config::Config;
+use anyhow::Result;
 use chrono::naive::NaiveDateTime;
-use hashbrown::HashMap;
 use log::info;
 use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
-use tokio::sync::{mpsc, oneshot};
+// use tokio::sync::{mpsc, oneshot};
+use std::path::PathBuf;
+use std::io::Write;
+use std::fs::File;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct FileModel {
-    path: String,
+    path: PathBuf,
     hash: String,
     len: u64,
     modified: u64,
@@ -21,12 +23,23 @@ pub struct FileModel {
 impl FileModel {
     pub fn new(path: &str) -> FileModel {
         FileModel {
-            path: path.into(),
+            path: PathBuf::from(path),
             hash: "".into(),
             len: 0,
             modified: 0,
             last_saved: None,
         }
+    }
+
+    pub fn from(path: PathBuf, len: u64, modified: u64) -> FileModel {
+        FileModel {
+            path,
+            hash: "".into(),
+            len,
+            modified,
+            last_saved: None,
+        }
+
     }
 
     /// calc the file's hash in hex format
@@ -37,7 +50,40 @@ impl FileModel {
 
         hex::encode(hash)
     }
+
+    /// save the list of file models to disk
+    pub fn write_file(filename: &str, list: Vec<FileModel>) -> Result<()> {
+        info!("write models to file: {}", filename);
+        let json = serde_json::to_string(&list).unwrap();
+        let mut buf = File::create(filename)?;
+        buf.write_all(json.as_bytes())?;
+
+        Ok(())
+    }
+
+
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calc_hash() {
+        let model = FileModel::new("config/config.toml");
+        let content = std::fs::read("tests/big-file.pdf").unwrap();
+        let hash = model.calc_hash(content.as_slice());
+
+        println!("hash: {}", hash);
+        assert_eq!(
+            hash,
+            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
+        );
+    }
+}
+
+/* 
 
 #[derive(Debug)]
 pub enum Command {
@@ -121,56 +167,4 @@ impl FileStore {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn load_file_db() {
-        let db = FileStore::load_file_db("tests/data/filedb.json");
-
-        assert_eq!(db.len(), 0);
-    }
-
-    #[test]
-    fn save_db() {
-        let map = create_db();
-
-        let json = serde_json::to_string(&map).unwrap();
-        println!("map: {}", json);
-    }
-
-    #[test]
-    fn list() {
-        let map = create_db();
-
-        let list: Vec<FileModel> = map.values().cloned().collect();
-        println!("vec: {:?}", list);
-
-        assert_eq!(list.len(), map.len())
-    }
-
-    #[test]
-    fn calc_hash() {
-        let model = FileModel::new("config/config.toml");
-        let content = std::fs::read("tests/big-file.pdf").unwrap();
-        let hash = model.calc_hash(content.as_slice());
-
-        println!("hash: {}", hash);
-        assert_eq!(
-            hash,
-            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
-        );
-    }
-
-    fn create_db() -> HashMap<String, FileModel> {
-        let mut map: HashMap<String, FileModel> = HashMap::new();
-
-        for idx in 1..=5 {
-            let model = FileModel::new(&format!("file-{}", idx));
-            map.insert(model.path.to_string(), model.clone());
-        }
-
-        map
-    }
-}
+*/
