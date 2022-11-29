@@ -153,7 +153,10 @@ mod tests {
         let hash = model.calc_hash(content.as_slice());
 
         println!("hash: {}", hash);
-        assert_eq!(hash, "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95");
+        assert_eq!(
+            hash,
+            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
+        );
     }
 
     fn create_db() -> HashMap<String, FileModel> {
