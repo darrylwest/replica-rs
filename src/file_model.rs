@@ -7,9 +7,9 @@ use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 // use tokio::sync::{mpsc, oneshot};
-use std::path::PathBuf;
-use std::io::Write;
 use std::fs::File;
+use std::io::Write;
+use std::path::PathBuf;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct FileModel {
@@ -39,7 +39,6 @@ impl FileModel {
             modified,
             last_saved: None,
         }
-
     }
 
     /// calc the file's hash in hex format
@@ -60,10 +59,7 @@ impl FileModel {
 
         Ok(())
     }
-
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -83,7 +79,7 @@ mod tests {
     }
 }
 
-/* 
+/*
 
 #[derive(Debug)]
 pub enum Command {

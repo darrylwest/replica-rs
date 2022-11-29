@@ -3,10 +3,10 @@ use anyhow::Result;
 // use crate::file_store::Command;
 use log::{debug, info};
 // use tokio::sync::{mpsc, oneshot};
+use crate::file_model::FileModel;
 use std::env;
 use std::path::PathBuf;
 use walkdir::WalkDir;
-use crate::file_store::FileModel;
 
 pub struct FileWalker {
     config: Config,
@@ -35,7 +35,9 @@ impl FileWalker {
                 debug!("{}", &pbuf.display());
                 let meta = path.metadata()?;
                 let modified = meta.modified()?;
-                let modified = modified.duration_since(std::time::SystemTime::UNIX_EPOCH)?.as_micros() as u64;
+                let modified = modified
+                    .duration_since(std::time::SystemTime::UNIX_EPOCH)?
+                    .as_micros() as u64;
                 let len = meta.len();
 
                 let model = FileModel::from(pbuf, len, modified);
@@ -65,7 +67,12 @@ impl FileWalker {
                 if path.is_file() {
                     let modified = meta.modified()?;
                     let modified = modified.duration_since(std::time::SystemTime::UNIX_EPOCH)?;
-                    debug!("{} {} {}", &pbuf.display(), meta.len(), modified.as_micros());
+                    debug!(
+                        "{} {} {}",
+                        &pbuf.display(),
+                        meta.len(),
+                        modified.as_micros()
+                    );
                     let model = FileModel::from(pbuf, meta.len(), modified.as_micros() as u64);
                     files.push(model);
                 }
