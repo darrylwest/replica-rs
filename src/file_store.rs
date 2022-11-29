@@ -13,6 +13,8 @@ use tokio::sync::{mpsc, oneshot};
 pub struct FileModel {
     path: String,
     hash: String,
+    len: u64,
+    modified: u64,
     last_saved: Option<NaiveDateTime>,
 }
 
@@ -21,6 +23,8 @@ impl FileModel {
         FileModel {
             path: path.into(),
             hash: "".into(),
+            len: 0,
+            modified: 0,
             last_saved: None,
         }
     }

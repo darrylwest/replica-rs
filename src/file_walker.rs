@@ -1,7 +1,7 @@
 use crate::config::Config;
 use anyhow::Result;
 // use crate::file_store::Command;
-use log::info;
+use log::{debug, info};
 // use tokio::sync::{mpsc, oneshot};
 use std::env;
 use std::path::PathBuf;
@@ -31,7 +31,7 @@ impl FileWalker {
 
             let path = pbuf.as_path();
             if path.is_file() && path.exists() {
-                println!("{}", &pbuf.display());
+                debug!("{}", &pbuf.display());
                 files.push(pbuf);
             }
         }
@@ -51,10 +51,14 @@ impl FileWalker {
                     continue;
                 }
 
+                let meta = entry.metadata()?;
                 let pbuf = entry.into_path();
+                let path = pbuf.as_path();
 
-                if pbuf.as_path().is_file() {
-                    println!("{}", &pbuf.display());
+                if path.is_file() {
+                    let modified = meta.modified()?;
+                    let modified = modified.duration_since(std::time::SystemTime::UNIX_EPOCH)?;
+                    debug!("{} {} {}", &pbuf.display(), meta.len(), modified.as_micros());
                     files.push(pbuf);
                 }
             }
