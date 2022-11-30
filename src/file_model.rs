@@ -2,11 +2,10 @@
 ///
 use anyhow::Result;
 use chrono::naive::NaiveDateTime;
+use hashbrown::HashMap;
 use log::info;
 use openssl::sha;
 use serde::{Deserialize, Serialize};
-use std::vec::Vec;
-// use tokio::sync::{mpsc, oneshot};
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
@@ -51,20 +50,20 @@ impl FileModel {
     }
 
     /// read the db file
-    pub fn read_dbfile(filename: &str) -> Result<Vec<FileModel>> {
+    pub fn read_dbfile(filename: &str) -> Result<HashMap<PathBuf, FileModel>> {
         let file = File::open(filename)?;
         let mut reader = BufReader::new(file);
 
         let mut text = String::new();
         reader.read_to_string(&mut text)?;
 
-        let list = serde_json::from_str(&text)?;
+        let map: HashMap<PathBuf, FileModel> = serde_json::from_str(&text)?;
 
-        Ok(list)
+        Ok(map)
     }
 
     /// save the list of file models to disk
-    pub fn write_dbfile(filename: &str, list: Vec<FileModel>) -> Result<()> {
+    pub fn write_dbfile(filename: &str, list: HashMap<PathBuf, FileModel>) -> Result<()> {
         info!("write models to file: {}", filename);
         let json = serde_json::to_string(&list).unwrap();
         let mut buf = File::create(filename)?;

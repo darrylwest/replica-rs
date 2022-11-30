@@ -25,12 +25,7 @@ fn main() -> Result<()> {
     }
     println!("total count: {}", files.len());
 
-    // change this to a map with filename as key
-    if dbref == files {
-        info!("db ref matches scanned files");
-    }
-
-    FileModel::write_dbfile(&config.dbfile, files)?;
+    FileModel::write_dbfile(&config.dbfile, dbref)?;
 
     Ok(())
 }
