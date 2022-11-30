@@ -8,10 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 // use tokio::sync::{mpsc, oneshot};
 use std::fs::File;
-use std::io::Write;
+use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileModel {
     path: PathBuf,
     hash: String,
@@ -50,8 +50,21 @@ impl FileModel {
         hex::encode(hash)
     }
 
+    /// read the db file
+    pub fn read_dbfile(filename: &str) -> Result<Vec<FileModel>> {
+        let file = File::open(filename)?;
+        let mut reader = BufReader::new(file);
+
+        let mut text = String::new();
+        reader.read_to_string(&mut text)?;
+
+        let list = serde_json::from_str(&text)?;
+
+        Ok(list)
+    }
+
     /// save the list of file models to disk
-    pub fn write_file(filename: &str, list: Vec<FileModel>) -> Result<()> {
+    pub fn write_dbfile(filename: &str, list: Vec<FileModel>) -> Result<()> {
         info!("write models to file: {}", filename);
         let json = serde_json::to_string(&list).unwrap();
         let mut buf = File::create(filename)?;
@@ -76,6 +89,14 @@ mod tests {
             hash,
             "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
         );
+    }
+
+    #[test]
+    fn read_dbfile() {
+        let filename = "tests/data/files.json";
+        let list = FileModel::read_dbfile(filename).expect("a vector of file models");
+
+        assert_eq!(list.len(), 2214);
     }
 }
 

@@ -13,9 +13,8 @@ fn main() -> Result<()> {
 
     info!("replica config: {:?}", config);
 
-    // start the db service (redis?)
-    // let _filedb = FileStore::new(&config);
-
+    // change this to a map with filename as key
+    let dbref = FileModel::read_dbfile(&config.dbfile)?;
     let file_walker = FileWalker::new(config.clone());
 
     // create the file reader
@@ -26,7 +25,12 @@ fn main() -> Result<()> {
     }
     println!("total count: {}", files.len());
 
-    FileModel::write_file(&config.dbfile, files)?;
+    // change this to a map with filename as key
+    if dbref == files {
+        info!("db ref matches scanned files");
+    }
+
+    FileModel::write_dbfile(&config.dbfile, files)?;
 
     Ok(())
 }
