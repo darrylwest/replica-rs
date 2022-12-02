@@ -20,3 +20,4 @@ hashbrown = { version = "0.13.1", features = ["serde"] }
 openssl = "0.10.43"
 hex = "0.4.3"
 walkdir = "2.3.2"
+subprocess = "0.2.9"
