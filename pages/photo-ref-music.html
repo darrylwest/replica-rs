@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+  body {
+    background-color: floralwhite;
+    font-size: large;
+    margin: 50px;
+  }
+
+  div {
+    margin: 5px;
+  }
+
+  pre {
+    padding: 5px;
+    white-space: pre-wrap;
+    word-break: keep-all;
+  }
+
+  button {
+    font-size: large;
+    padding: 12px 20px;
+  }
+
+  input {
+    font-family: monospace;
+  }
+
+  textarea {
+    font-family: monospace;
+  }
+
+  .decrypted {
+    background-color: palegreen;
+    border: 2px dotted forestgreen;
+  }
+
+  .hint { }
+
+  img.decrypted {
+    padding: 12px 20px;
+  }
+
+  a.decrypted {
+    font-size: xx-large;
+  }
+
+  input.password_input {
+    font-size: large;
+    padding: 12px 20px;
+  }
+  </style>
+  <script>
+  // Display the encryption inputs on the page (invoked during body onload)
+  async function loadValues() {
+    document.getElementById("secret_type").innerHTML = secretType
+    document.getElementById("salt").setAttribute("value", saltHex)
+    document.getElementById("iv").setAttribute("value", ivHex)
+    document.getElementById("cipher").innerHTML = cipherHex
+
+    if (secretType == 'file') {
+      document.getElementById("target_file").innerHTML = `Download file.${secretExt}`
+    }
+  }
+
+  // Invoked when the 'Decrypt' button is pressed
+  async function decrypt() {
+    try {
+      setMessage("Generating key from password...")
+
+      // Load salt, convert hex string to byte array
+      let salt = hexStringToBytes(saltHex)
+      if (salt.length != saltSize) {
+        throw new Error(`Unexpected salt size: ${salt.length}`)
+      }
+
+      // Load IV, convert hex string to byte array
+      let iv = hexStringToBytes(ivHex)
+      if (iv.length != blockSize) {
+        throw new Error(`Unexpected IV size: ${iv.length}`)
+      }
+
+      // Load password, as byte array
+      let password = new TextEncoder().encode(document.getElementById("password").value)
+      if (password.length == 0) {
+        throw new Error(`Empty password`)
+      }
+
+      // Wrap password into a Key object, as required by cryptography APIs
+      let passwordKey = await window.crypto.subtle.importKey(
+        "raw", // Array of bytes
+        password,
+        {name: "PBKDF2"}, // What algorithm uses the key
+        false, // Cannot be extracted
+        ["deriveKey"] // What the key is used for
+      )
+
+      // Derive a key from the password, using PBKDF2
+      let key = await window.crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2", // https://en.wikipedia.org/wiki/PBKDF2
+          salt: salt,
+          iterations: iterations,
+          hash: "SHA-1", // As per standard v2.0
+        },
+        passwordKey, // Wrapped password
+        {
+          name: "AES-GCM", // What algorithm uses the key
+          length: keySize * 8, // Key bitsize
+        },
+        false, // Cannot be extracted
+        ["decrypt"] // What the derived key is used for
+      )
+
+      setMessage("Decrypting...")
+
+      // Load ciphertext, convert hex string to byte array
+      let cipher = hexStringToBytes(cipherHex)
+
+      // Decrypt with AES-GCM
+      // https://en.wikipedia.org/wiki/Galois/Counter_Mode
+      let decryptedBuffer = await window.crypto.subtle.decrypt(
+        {
+          name: "AES-GCM", // Name of block cipher algorithm
+          iv: iv, // Initialization vector
+        },
+        key, // Derived key
+        cipher // Ciphertext
+      )
+
+      // Remove padding (added as necessary for block cipher)
+      // https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS#5_and_PKCS#7
+      decrypted = removePadding(new Uint8Array(decryptedBuffer))
+
+      // Render decrypted payload on the page
+      if (secretType == "message") {
+        // Decode bytes to UTF-8
+        plainText = new TextDecoder().decode(decrypted)
+        // Display the plaintext on the page
+        document.getElementById("target_text").innerHTML = plainText
+        document.getElementById("text_output_div").hidden = false
+      } else if (secretType == "image") {
+        // Transform image to base64 string
+        b64Data = btoa(decrypted.reduce((data, byte) => data + String.fromCharCode(byte), ''))
+        // Create 'data' URI
+        // https://en.wikipedia.org/wiki/Data_URI_scheme
+        const imageData = `data:image/${secretExt};base64,${b64Data}`
+        // Display image inline
+        document.getElementById("target_image").setAttribute("src", imageData)
+        document.getElementById("image_output_div").hidden = false
+      } else if (secretType == "file") {
+        // Transform image to base64 string
+        b64Data = btoa(decrypted.reduce((data, byte) => data + String.fromCharCode(byte), ''))
+        // Create 'data' URI
+        // https://en.wikipedia.org/wiki/Data_URI_scheme
+        const fileData = `data:application/octet-stream;base64,${b64Data}`
+        // Activate download link
+        document.getElementById("target_file").setAttribute("href", fileData)
+        document.getElementById("target_file").setAttribute("download", `file.${secretExt}`)
+        document.getElementById("file_output_div").hidden = false
+      } else {
+        throw new Error(`Unknown secret type: ${secretType}`)
+      }
+
+      setMessage("Decrypted successfully")
+
+    } catch (err) {
+      // TODO better handle failing promises
+      setMessage(`Decryption failed: ${err}`)
+      return
+    }
+  }
+
+  // Transform hexadecimal string to Uint8Array
+  function hexStringToBytes(input) {
+    for (var bytes = [], c = 0; c < input.length; c += 2) {
+      bytes.push(parseInt(input.substr(c, 2), 16));
+    }
+    return Uint8Array.from(bytes);
+  }
+
+  // The cleartext input must be padded to a multiple of the block size
+  // for encryption. This function removes the padding, expected to be
+  // compatible with PKCS#7 described in RFC 5652.
+  // https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS#5_and_PKCS#7
+  function removePadding(input) {
+    // Last byte is the amount of padding
+    padAmount = input[input.length-1]
+    unpaddedSize = input.length - padAmount
+    return input.slice(0, unpaddedSize)
+  }
+
+  // Update page with status of decryption
+  function setMessage(msg) {
+    document.getElementById("errormsg").innerHTML = msg
+  }
+  </script>
+</head>
+<body onload="loadValues()">
+
+  <div>
+    <pre class="hint">-d license</pre>
+  </div>
+
+  <div>
+    <input type="text" id="password" placeholder="pw" class="password_input" required>
+  </div>
+
+  <div>
+    <button type="button" onclick='decrypt()'>Decrypt</button>
+    <span id="errormsg"></span>
+  </div>
+
+  <div id="text_output_div" hidden>
+    <pre id="target_text" class="decrypted"></pre>
+  </div>
+
+  <div id="image_output_div" hidden>
+    <img id="target_image" class="decrypted">
+  </div>
+
+  <div id="file_output_div" hidden>
+    <a id="target_file" class="decrypted">Download</a>
+  </div>
+
+  <details>
+    <summary>Details</summary>
+
+    These are decryption inputs, that can be safely transmitted in the clear.
+    Without the correct password, they are useless.
+
+    <div>
+      Salt:
+      <input type="text" id="salt" value="" readonly>
+    </div>
+
+    <div>
+      IV:
+      <input type="text" id="iv" value="" readonly>
+    </div>
+
+    <div>
+      Ciphertext:<br>
+      <textarea rows="8" cols="80" id="cipher" readonly></textarea>
+    </div>
+  </details>
+</body>
+<script>
+const secretType = "message"
+const secretExt  = ""
+const saltSize   = 16  // bytes
+const blockSize  = 16 // bytes
+const keySize    = 32   // bytes
+const iterations = 1000000
+const saltHex    = "5eddd941fa2d7711baf7542fa38df7aa"
+const ivHex      = "c3948f3a43cad63503ca9022bb511736"
+const cipherHex  = "b2cb0538cbd5d24d0af0128c9a530e4f06eb8f95fc2c727c7ef3df426207d1017f914151fd37a18a403cc7d03072cd199ec4ad07d390a31db8df4de16ec8dc74e78f40b26c61d18295e034bd5cedf4191a836064d4920ba805100c78f88585ae88d944c87f3efeca2a7f52a0cc9982d110ea1f57c42bb119474acd53071f7dbebcc99e1e6676442894bf33f05324502fe93b0ef3be7822e630946e233e1050516320e28c0fc7c96b76b7a6ada999b9fbcb10ed188a49b0685dbc17648b85312b325b4c36996fb1188b63a96069615badcbfb157f04eff70047369a36a747beb9aac89cba341f0023d03efea46e0d0d11579324edcefb27d824dc0678d8e74e3ed35072bb1779b310b514d884f2336dfea7bd0165dd38a00a95586c2f9bfd6805dd77a5d09f127f66f7236b37051a112c48a527c6136927a5d4e3fabe787aec2078eda8a114a7a08a077428ce494615da4ca1a16bcfb7e4f65e881e62d7fb5da85e2b72d35ef7263ceb80425336b76df98f24a0179352d4f57e53ed8a3401a18ed4c306976fbb141d46f56573ad1eee922016c2424b0ae43ec73e189f8c22e5a94d56256d653e0b7394a13d24d8b45464c66525b583f79a6a938105519cdc803ffc97f97bd11253006319fef77ce1e2233e385244c17d7860b33dae661bf766be3b1e7c9f11751bd7f4705af88b77f656c5416318428c3fd7956fc2ea1f94645b9c501b4e0e403422ccbf6b1ce67ad9459bdccd9abe214e78a43b82c54869893e713fbef4558112aa5a701437c2434338"
+</script>
+</html>
