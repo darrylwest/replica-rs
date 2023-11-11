@@ -15,6 +15,7 @@
 * queue changed files
 * drain queue by saving new files while updating database
 * rotate db then write current
+* run each 5 minutes?
 
 ## Database
 
