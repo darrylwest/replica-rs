@@ -31,7 +31,8 @@ fn main() -> Result<()> {
     for model in file_walker.walk_files()?.iter() {
         files.push(model.clone());
     }
-    println!("total count: {}", files.len());
+
+    info!("total count: {}", files.len());
     for file in files.iter() {
         let p = file.path.to_str().unwrap().replace(home.as_str(), "");
         println!("{}", p);

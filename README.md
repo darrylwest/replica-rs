@@ -10,14 +10,15 @@
 
 ## Data Flow Procedures
 
-* from config, read the file list and create/update the database
-* iterate over all the files to determine if any have changed
+* from config, read the file list 
+* read the db and update with any changes
 * queue changed files
 * drain queue by saving new files while updating database
+* rotate db then write current
 
 ## Database
 
-* json file
+* json file(s) with day stamps
 * sqlite3 (no service required)
 * redis
 * custom kv store
