@@ -12,7 +12,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileModel {
-    path: PathBuf,
+    pub path: PathBuf,
     hash: String,
     len: u64,
     modified: u64,
