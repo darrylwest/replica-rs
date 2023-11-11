@@ -13,8 +13,10 @@ fn main() -> Result<()> {
     if !home.ends_with("/") {
         home.push('/');
     }
+
+    env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
     
-    let config = Config::read_config("config/config.toml")?;
+    let config = Config::read_config(".replica/config/config.toml")?;
     config.start_logger()?;
 
     info!("replica config: {:?}", config);

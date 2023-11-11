@@ -51,6 +51,7 @@ impl FileModel {
 
     /// read the db file
     pub fn read_dbfile(filename: &str) -> Result<HashMap<PathBuf, FileModel>> {
+        info!("read dbfile: {}", filename);
         let file = File::open(filename)?;
         let mut reader = BufReader::new(file);
 
