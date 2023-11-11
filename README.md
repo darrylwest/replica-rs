@@ -8,7 +8,20 @@
            |__|                                                      |__|   
 ```
 
-Show the list of files
+## Data Flow Procedures
+
+* from config, read the file list and create/update the database
+* iterate over all the files to determine if any have changed
+* queue changed files
+* drain queue by saving new files while updating database
+
+## Database
+
+* json file
+* sqlite3 (no service required)
+* redis
+* custom kv store
+* other static file k/v
 
 ###### dpw | 2023.11.11
 
