@@ -19,11 +19,9 @@
 
 ## Database
 
-* json file(s) with day stamps
-* sqlite3 (no service required)
-* redis
-* custom kv store
-* other static file k/v
+* json file from serde/HashBrown
+* read all; make updates; write/store all
+* file model struct with path, hash, len, modified and last_saved
 
-###### dpw | 2023.11.11
+###### dpw | 2023.11.13
 
