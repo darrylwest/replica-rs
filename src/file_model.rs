@@ -6,6 +6,7 @@ use hashbrown::HashMap;
 use log::info;
 use openssl::sha;
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
@@ -66,11 +67,21 @@ impl FileModel {
     /// save the list of file models to disk
     pub fn write_dbfile(filename: &str, list: HashMap<PathBuf, FileModel>) -> Result<()> {
         info!("write models to file: {}", filename);
-        let json = serde_json::to_string(&list).unwrap();
+        let json = serde_json::to_string_pretty(&list).unwrap();
+
         let mut buf = File::create(filename)?;
         buf.write_all(json.as_bytes())?;
 
         Ok(())
+    }
+
+    /// strip off the home parts to return the relative path
+    pub fn relative_path(&self) -> String {
+        let mut home = env::var("HOME").expect("The user should have a home folder.");
+        if !home.ends_with('/') {
+            home.push('/');
+        }
+        self.path.to_str().unwrap().replace(home.as_str(), "")
     }
 }
 
@@ -99,89 +110,3 @@ mod tests {
         assert_eq!(list.len(), 2214);
     }
 }
-
-/*
-
-#[derive(Debug)]
-pub enum Command {
-    Get(String, oneshot::Sender<Option<FileModel>>),
-    Put(FileModel, oneshot::Sender<String>),
-    Delete(String, oneshot::Sender<String>),
-    List(oneshot::Sender<Vec<FileModel>>),
-    SaveDb(oneshot::Sender<String>),
-}
-
-#[derive(Debug)]
-pub struct FileStore {
-    req_sender: mpsc::Sender<Command>,
-}
-
-impl FileStore {
-    pub async fn new(config: &Config) -> FileStore {
-        info!("start the file store/db: config: {:?}", &config);
-
-        let req_sender: mpsc::Sender<Command>;
-        let mut req_receiver: mpsc::Receiver<Command>;
-
-        (req_sender, req_receiver) = mpsc::channel(64);
-
-        let mut map = FileStore::load_file_db("data/filedb.json");
-        // read the current filelist db...
-
-        tokio::spawn(async move {
-            while let Some(cmd) = req_receiver.recv().await {
-                info!("req recv: {:?}", &cmd);
-                match cmd {
-                    Command::Put(model, tx) => {
-                        info!("put file model: {:?}", &model);
-                        let file_model = model.clone();
-                        map.insert(model.path, file_model);
-                        let _ = tx.send("ok".into());
-                    }
-                    Command::Get(path, tx) => {
-                        info!("get file model: {}", &path);
-                        let _ = if let Some(v) = map.get(&path) {
-                            tx.send(Some(v.clone()))
-                        } else {
-                            tx.send(None)
-                        };
-                    }
-                    Command::Delete(path, tx) => {
-                        map.remove(&path);
-                        let _ = tx.send("ok".into());
-                    }
-                    Command::List(tx) => {
-                        let list: Vec<FileModel> = map.values().cloned().collect();
-                        let _ = tx.send(list);
-                    }
-                    Command::SaveDb(tx) => {
-                        let json = serde_json::to_string(&map).expect("a json map");
-                        info!("json: {}", json);
-
-                        let _ = tx.send("ok".into());
-                    }
-                }
-
-                info!("db: {:?}", map);
-            }
-
-            req_receiver.close();
-        });
-
-        FileStore { req_sender }
-    }
-
-    pub fn request_channel(&self) -> mpsc::Sender<Command> {
-        self.req_sender.clone()
-    }
-
-    /// load the file models db from json file
-    pub fn load_file_db(_filename: &str) -> HashMap<String, FileModel> {
-        // load the json file and insert into map
-        let map: HashMap<String, FileModel> = HashMap::new();
-
-        map
-    }
-}
-
-*/

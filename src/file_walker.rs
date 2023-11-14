@@ -41,6 +41,9 @@ impl FileWalker {
                 let len = meta.len();
 
                 let model = FileModel::from(pbuf, len, modified);
+
+                // now set the content hash
+
                 files.push(model);
             }
         }
