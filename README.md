@@ -8,6 +8,15 @@
            |__|                                                      |__|   
 ```
 
+## To Do
+
+* [ ] add process.rs and mv main.rs to bin/replica.rs
+* [ ] add CLI
+* [ ] implement queue
+* [ ] run from crontab to test
+* [ ] implement file writes to target backup
+* [ ] add exclude or ignore patterns in config
+
 ## Data Flow Procedures
 
 * change to home folder

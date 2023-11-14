@@ -31,10 +31,16 @@ fn main() -> Result<()> {
 
     info!("total count: {}", files.len());
     for file in files.iter() {
-        let _ = dbref.insert(file.path.clone(), file.clone());
-
         let p = file.relative_path();
-        info!("{} {} {} {:?} {}", p, file.len, file.modified, file.last_saved, file.hash)
+        info!("{} {} {} {:?} {}", p, file.len, file.modified, file.last_saved, file.hash);
+
+        if let Some(file_ref) = dbref.insert(file.path.clone(), file.clone()) {
+            let rmod = file_ref.modified;
+            let fmod = file.modified;
+            let diff = rmod - fmod;
+            info!("{}: {} = {} : {}", p, rmod, fmod, diff);
+        }
+        
     }
 
     FileModel::write_dbfile(&config.dbfile, dbref)?;
