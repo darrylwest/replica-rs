@@ -5,6 +5,7 @@ alias t := test
 alias pre := test-all
 alias b := build
 alias rel := release
+alias fmt := format
 
 # run the standard tests
 test:
@@ -14,12 +15,16 @@ test:
 # run the standard tests + clippy and fmt
 test-all:
     clear
-    cargo test -- --include-ignored && cargo fmt && cargo clippy
+    cargo test -- --include-ignored && just format
 
 # build the debug target
 build:
     clear
     cargo build
+
+# run fmt and clippy
+format:
+    cargo fmt && cargo clippy
 
 # build the docs
 docs:

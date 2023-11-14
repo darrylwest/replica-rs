@@ -1,0 +1,15 @@
+name = "test-replica"
+version = "0.1.1"
+dryrun = false
+home = ".replica"
+logging_config = ".replica/config/console.yaml"
+targets = [".backup/test"]
+source_folders = [ "tests/data" ]
+files = [ 
+    ".gitignore",
+    "tests/.motd",
+    "tests/.profile",
+]
+dbfile = ".replica/data/files.json"
+compress = false
+encrypt = false

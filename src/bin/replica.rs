@@ -22,11 +22,6 @@ pub struct Cli {
 }
 
 fn run(cli: Cli) -> Result<()> {
-    // process the cli
-    let home = env::var("HOME").expect("The user should have a home folder.");
-
-    env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
-
     let config = Config::read_config(".replica/config/config.toml")?;
     config.start_logger()?;
 
@@ -71,5 +66,31 @@ fn run(cli: Cli) -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    let home = env::var("HOME").expect("The user should have a home folder.");
+    env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
+
     run(Cli::parse())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn run_test() {
+        let cli = Cli {
+            verbose: true,
+            dryrun: true,
+        };
+        println!("{:?}", cli);
+        match run(cli) {
+            Ok(()) => {
+                assert!(true)
+            }
+            Err(e) => {
+                println!("error: {}", e);
+                assert!(false);
+            }
+        }
+    }
 }

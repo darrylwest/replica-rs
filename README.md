@@ -8,17 +8,25 @@
            |__|                                                      |__|   
 ```
 
+## Overview
+
+Supervised backups...
+
+All machines run supervisor check all machines that have replica enabled to check for any errors.  Summary report(s) created and emailed.
+
 ## To Do
 
 * [x] add process.rs and mv main.rs to bin/replica.rs
 * [x] add CLI
 * [x] run from crontab to test
+* [x] modify tests to remove $HOME dependency
 * [ ] improve error handling
 * [ ] add exit hook to verify run
 * [ ] change logging to only log what was queued and backed up
 * [ ] implement queue
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
+* [ ] implement supervisor to check backups and generate a status report (daily)
 
 ## Data Flow Procedures
 
