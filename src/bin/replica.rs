@@ -57,7 +57,7 @@ fn run(cli: Cli) -> Result<()> {
         if let Some(file_ref) = dbref.insert(file.path.clone(), file.clone()) {
             let rmod = file_ref.modified;
             let fmod = file.modified;
-            let diff = rmod - fmod;
+            let diff = rmod == fmod;
             info!("{}: {} = {} : {}", p, rmod, fmod, diff);
         }
     }
