@@ -10,7 +10,8 @@
 
 ## Data Flow Procedures
 
-* from config, read the file list 
+* change to home folder
+* from config, read the file list (if any)
 * read the db and update with any changes
 * queue changed files
 * drain queue by saving new files while updating database
@@ -23,5 +24,5 @@
 * read all; make updates; write/store all
 * file model struct with path, hash, len, modified and last_saved
 
-###### dpw | 2023.11.13
+###### dpw | 2023.11.14
 

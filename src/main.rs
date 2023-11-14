@@ -34,7 +34,7 @@ fn main() -> Result<()> {
         let _ = dbref.insert(file.path.clone(), file.clone());
 
         let p = file.relative_path();
-        println!("{} {:?}", p, file)
+        info!("{} {} {} {:?} {}", p, file.len, file.modified, file.last_saved, file.hash)
     }
 
     FileModel::write_dbfile(&config.dbfile, dbref)?;

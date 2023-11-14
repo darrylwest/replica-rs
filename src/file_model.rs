@@ -14,10 +14,10 @@ use std::path::PathBuf;
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileModel {
     pub path: PathBuf,
-    hash: String,
-    len: u64,
-    modified: u64,
-    last_saved: Option<NaiveDateTime>,
+    pub hash: String,
+    pub len: u64,
+    pub modified: u64,
+    pub last_saved: Option<NaiveDateTime>,
 }
 
 impl FileModel {
