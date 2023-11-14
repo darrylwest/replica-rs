@@ -2,6 +2,16 @@
 name = "replica"
 version = "0.2.3"
 edition = "2021"
+authors = ["darryl.west@raincitysoftware.com"]
+rust-version = "1.70"
+description = "Backup local files to various targets"
+keywords = ["backup" ]
+license = "Apach-2.0"
+readme = "README.md"
+homepage = "https://github.com/darrylwest/replica-rs"
+repository = "https://github.com/darrylwest/replica-rs"
+exclude = [ ".github/*" ]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

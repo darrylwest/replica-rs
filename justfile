@@ -27,12 +27,12 @@ docs:
 
 # run the debug app
 run:
-    clear && cargo run
+    clear && cargo run --bin replica
 
 # build the release
 release:
     clear
-    cargo build --release
+    cargo build --release --bins
 
 # watch the current folders and run tests when a file is changed
 watch:
