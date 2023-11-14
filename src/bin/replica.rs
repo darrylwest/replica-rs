@@ -49,16 +49,19 @@ fn run(cli: Cli) -> Result<()> {
     info!("total count: {}", files.len());
     for file in files.iter() {
         let p = file.relative_path();
-        info!(
-            "{} {} {} {:?} {}",
-            p, file.len, file.modified, file.last_saved, file.hash
-        );
+        if cli.verbose {
+            info!(
+                "{} {} {} {:?} {}",
+                p, file.len, file.modified, file.last_saved, file.hash
+            );
+        }
 
         if let Some(file_ref) = dbref.insert(file.path.clone(), file.clone()) {
             let rmod = file_ref.modified;
             let fmod = file.modified;
-            let diff = rmod == fmod;
-            info!("{}: {} = {} : {}", p, rmod, fmod, diff);
+            if rmod != fmod {
+                info!("QUEUE: {}: {} = {}", p, rmod, fmod);
+            }
         }
     }
 

@@ -2,7 +2,7 @@
 project := "replica"
 
 alias t := test
-alias ta := test-all
+alias pre := test-all
 alias b := build
 alias rel := release
 

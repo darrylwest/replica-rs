@@ -13,6 +13,9 @@
 * [x] add process.rs and mv main.rs to bin/replica.rs
 * [x] add CLI
 * [x] run from crontab to test
+* [ ] improve error handling
+* [ ] add exit hook to verify run
+* [ ] change logging to only log what was queued and backed up
 * [ ] implement queue
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
