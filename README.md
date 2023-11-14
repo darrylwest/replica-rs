@@ -10,10 +10,10 @@
 
 ## To Do
 
-* [ ] add process.rs and mv main.rs to bin/replica.rs
-* [ ] add CLI
+* [x] add process.rs and mv main.rs to bin/replica.rs
+* [x] add CLI
+* [x] run from crontab to test
 * [ ] implement queue
-* [ ] run from crontab to test
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
 

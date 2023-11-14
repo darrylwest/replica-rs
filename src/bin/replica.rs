@@ -2,13 +2,27 @@
 //!
 
 use anyhow::Result;
-use log::info;
+use clap::Parser;
+use log::{info, warn};
 use replica::config::Config;
 use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
 use std::env;
 
-fn main() -> Result<()> {
+#[derive(Clone, Debug, Default, Parser)]
+#[clap(name = "replica", author, version, about, long_about = None)]
+pub struct Cli {
+    /// set verbose to log to console
+    #[clap(short, long, value_parser)]
+    pub verbose: bool,
+
+    /// run the full db read, file walker, queue but skip process queue
+    #[clap(short, long, value_parser, default_value_t = true)]
+    pub dryrun: bool,
+}
+
+fn run(cli: Cli) -> Result<()> {
+    // process the cli
     let home = env::var("HOME").expect("The user should have a home folder.");
 
     env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
@@ -17,6 +31,9 @@ fn main() -> Result<()> {
     config.start_logger()?;
 
     info!("replica config: {:?}", config);
+    if cli.dryrun {
+        warn!("THIS IS A DRY RUN!");
+    }
 
     // map with filename as key
     let mut dbref = FileModel::read_dbfile(&config.dbfile)?;
@@ -32,7 +49,10 @@ fn main() -> Result<()> {
     info!("total count: {}", files.len());
     for file in files.iter() {
         let p = file.relative_path();
-        info!("{} {} {} {:?} {}", p, file.len, file.modified, file.last_saved, file.hash);
+        info!(
+            "{} {} {} {:?} {}",
+            p, file.len, file.modified, file.last_saved, file.hash
+        );
 
         if let Some(file_ref) = dbref.insert(file.path.clone(), file.clone()) {
             let rmod = file_ref.modified;
@@ -40,10 +60,13 @@ fn main() -> Result<()> {
             let diff = rmod - fmod;
             info!("{}: {} = {} : {}", p, rmod, fmod, diff);
         }
-        
     }
 
     FileModel::write_dbfile(&config.dbfile, dbref)?;
 
     Ok(())
+}
+
+fn main() -> Result<()> {
+    run(Cli::parse())
 }
