@@ -20,10 +20,9 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] add CLI
 * [x] run from crontab to test
 * [x] modify tests to remove $HOME dependency
-* [ ] improve error handling
-* [ ] add exit hook to verify run
-* [ ] change logging to only log what was queued and backed up
+* [x] change logging to only log what was queued and backed up
 * [ ] implement queue
+* [ ] improve error handling
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
 * [ ] implement supervisor to check backups and generate a status report (daily)

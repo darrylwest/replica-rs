@@ -62,6 +62,8 @@ fn run(cli: Cli) -> Result<()> {
 
     FileModel::write_dbfile(&config.dbfile, dbref)?;
 
+    info!("PROCESS COMPLETE {}", "^_".repeat(40));
+
     Ok(())
 }
 

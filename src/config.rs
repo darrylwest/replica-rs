@@ -60,7 +60,7 @@ impl Config {
     /// start the logger
     pub fn start_logger(&self) -> Result<()> {
         log4rs::init_file(&self.logging_config, Default::default())?;
-        info!("START LOGGER: {}", "-".repeat(60));
+        info!("START LOGGER: {}", "-".repeat(80));
 
         Ok(())
     }
