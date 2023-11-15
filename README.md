@@ -21,7 +21,7 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] run from crontab to test
 * [x] modify tests to remove $HOME dependency
 * [x] change logging to only log what was queued and backed up
-* [ ] implement queue
+* [-] implement queue vector and backup_queue module to save files to backup target
 * [ ] improve error handling
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config

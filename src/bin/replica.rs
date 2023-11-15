@@ -3,7 +3,8 @@
 
 use anyhow::Result;
 use clap::Parser;
-use log::{info, warn};
+use log::{error, info, warn};
+use replica::backup_queue::BackupQueue;
 use replica::config::Config;
 use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
@@ -21,6 +22,7 @@ pub struct Cli {
     pub dryrun: bool,
 }
 
+/// TODO: refactor this to multiple methods
 fn run(cli: Cli) -> Result<()> {
     let config = Config::read_config(".replica/config/config.toml")?;
     config.start_logger()?;
@@ -63,6 +65,16 @@ fn run(cli: Cli) -> Result<()> {
     }
 
     info!("queue count: {}", queue.len());
+    let backup = BackupQueue::new("test", queue);
+    match backup.process() {
+        Ok(saved) => {
+            info!("update the db reference, len: {}", saved.len());
+        }
+        Err(e) => {
+            error!("backup failed: {e}");
+            return Err(e);
+        }
+    }
 
     FileModel::write_dbfile(&config.dbfile, dbref)?;
 
