@@ -7,6 +7,8 @@ alias b := build
 alias rel := release
 alias fmt := format
 
+os := `uname`
+
 # run the standard tests
 test:
     clear
@@ -55,3 +57,7 @@ serve-cover:
 merge:
     git push && git checkout main && git pull && git merge develop && git push && git checkout develop
 
+# install the app
+install:
+    just release
+    ./install.sh

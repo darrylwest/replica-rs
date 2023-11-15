@@ -62,7 +62,7 @@ fn run(cli: Cli) -> Result<()> {
         }
     }
 
-    info!("queued count: {}", queue.len());
+    info!("queue count: {}", queue.len());
 
     FileModel::write_dbfile(&config.dbfile, dbref)?;
 
