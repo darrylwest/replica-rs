@@ -35,12 +35,13 @@ fn run(cli: Cli) -> Result<()> {
     let file_walker = FileWalker::new(config.clone());
 
     // create the file reader
-    let mut files = file_walker.walk_folders()?;
 
+    let mut files: Vec<FileModel> = Vec::new();
     for model in file_walker.walk_files()?.iter() {
         files.push(model.clone());
     }
 
+    let mut queue: Vec<FileModel> = Vec::new();
     info!("total count: {}", files.len());
     for file in files.iter() {
         let p = file.relative_path();
@@ -56,13 +57,16 @@ fn run(cli: Cli) -> Result<()> {
             let fmod = file.modified;
             if rmod != fmod {
                 info!("QUEUE: {}: {} = {}", p, rmod, fmod);
+                queue.push(file.clone())
             }
         }
     }
 
+    info!("queued count: {}", queue.len());
+
     FileModel::write_dbfile(&config.dbfile, dbref)?;
 
-    info!("PROCESS COMPLETE {}", "^_".repeat(40));
+    info!("PROCESS COMPLETE {}", "-".repeat(80));
 
     Ok(())
 }

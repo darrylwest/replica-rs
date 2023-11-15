@@ -11,7 +11,6 @@ use walkdir::WalkDir;
 pub struct FileWalker {
     config: Config,
     home: String,
-    // req_sender: mpsc::Sender<Command>,
 }
 
 impl FileWalker {
