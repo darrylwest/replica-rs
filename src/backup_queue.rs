@@ -37,9 +37,9 @@ impl BackupQueue {
         let files = self.files.clone();
         for file_model in files {
             let fpath = file_model.path.as_os_str();
-            match self.check_file(&file_model) {
+            match self.check_and_copy_file(&file_model) {
                 Some(backup_model) => {
-                    info!("backup: {:?}", backup_model);
+                    info!("backup: {:?} -> {}", fpath, backup_model.path.display());
 
                     saved.push(backup_model);
                 }
@@ -51,11 +51,11 @@ impl BackupQueue {
     }
 
     /// create the target path; check stat to see backup is required
-    pub fn check_file(&self, model: &FileModel) -> Option<FileModel> {
+    pub fn check_and_copy_file(&self, model: &FileModel) -> Option<FileModel> {
         let relative_path = model.relative_path();
         let target_path = Path::join(self.target.as_path(), PathBuf::from(relative_path));
 
-        info!("target path: {}", target_path.to_string_lossy());
+        debug!("target path: {}", target_path.to_string_lossy());
 
         // if the file exists, check the size and modfied dates; if different then
         let target_model = self.match_files(model, target_path.as_path());
@@ -63,7 +63,10 @@ impl BackupQueue {
 
         let target_model = target_model.unwrap();
 
-        Some(target_model)
+        match self.copy_model(model.path.as_path(), target_model) {
+            Ok(model) => Some(model),
+            Err(_e) => None,
+        }
     }
 
     /// return a new file model if the two don't match or the target does not exist

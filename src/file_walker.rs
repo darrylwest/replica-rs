@@ -46,14 +46,8 @@ impl FileWalker {
             let path = pbuf.as_path();
             if path.is_file() && path.exists() {
                 debug!("{}", &pbuf.display());
-                let meta = path.metadata()?;
-                let modified = meta.modified()?;
-                let modified = modified
-                    .duration_since(std::time::SystemTime::UNIX_EPOCH)?
-                    .as_micros() as u64;
-                let len = meta.len();
-
-                let model = FileModel::from(pbuf, len, modified);
+                let model = FileModel::new(pbuf.to_str().unwrap());
+                let model = model.read_metadata()?;
 
                 files.push(model);
             }

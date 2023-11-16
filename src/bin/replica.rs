@@ -63,7 +63,12 @@ fn run(cli: Cli) -> Result<()> {
 
         let target_dir = &config.targets[0];
         let backup = BackupQueue::new(target_dir.as_str(), files, config.dryrun);
-        let _results = backup.process();
+        let results = backup.process();
+        if results.is_ok() {
+            info!("{} files backed up.", results.unwrap().len());
+        } else {
+            error!("{:?}", results);
+        }
     }
 
     info!("PROCESS COMPLETE {}", "-".repeat(80));
