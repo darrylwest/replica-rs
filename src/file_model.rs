@@ -40,6 +40,32 @@ impl FileModel {
         }
     }
 
+    /// copy constructor
+    pub fn copy_from(model: FileModel) -> FileModel {
+        FileModel {
+            path: model.path.clone(),
+            hash: model.hash.clone(),
+            len: model.len,
+            modified: model.modified,
+            last_saved: model.last_saved,
+        }
+    }
+
+    /// read the file based metadata, len, modified, etc
+    pub fn read_metadata(&self) -> Result<FileModel> {
+        let mut model = self.clone();
+        let meta = self.path.metadata()?;
+        model.len = meta.len();
+
+        let modified = meta.modified().unwrap();
+        model.modified = modified
+            .duration_since(std::time::SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64;
+
+        Ok(model)
+    }
+
     /// calc the file's hash in hex format
     pub fn calc_hash(&self, content: &[u8]) -> String {
         let mut hasher = sha::Sha256::new();
