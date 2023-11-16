@@ -41,9 +41,9 @@ fn run(cli: Cli) -> Result<()> {
     info!("replica config: {:?}", config);
 
     let app_home = config.home.as_str();
-    let msg = format!("should be able to change to config home: {}", app_home);
+    let msg = format!("Change to app home: {}", app_home);
     info!("{}", msg.as_str());
-    env::set_current_dir(app_home).expect(msg.as_str());
+    env::set_current_dir(app_home).unwrap_or_else(|_| panic!("{}", msg));
 
     if cli.dryrun {
         warn!("THIS IS A DRY RUN!");
@@ -110,6 +110,9 @@ fn run(cli: Cli) -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    let home = env::var("HOME").expect("The user should have a home folder.");
+    env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
+
     run(Cli::parse())
 }
 
