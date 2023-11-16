@@ -24,6 +24,7 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] implement queue vector and backup_queue module to 
 * [-] save files to backup target
 * [-] improve error handling
+* [ ] replace string manupulation for std::path::{Path, PathBuf}
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
 * [ ] implement supervisor to check backups and generate a status report (daily)

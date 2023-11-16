@@ -4,7 +4,7 @@
 use anyhow::Result;
 use clap::Parser;
 use log::{error, info, warn};
-// use replica::backup_queue::BackupQueue;
+use replica::backup_queue::BackupQueue;
 use replica::config::Config;
 use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
@@ -56,10 +56,14 @@ fn run(cli: Cli) -> Result<()> {
     if let Ok(files) = walker.walk_files_and_folders() {
         info!("file count: {}", files.len());
         // now compare and update if necessary
-        match FileModel::write_dbfile(&config.dbfile, files) {
+        match FileModel::write_dbfile(&config.dbfile, files.clone()) {
             Ok(()) => info!("file model list written to {}", config.dbfile),
             Err(e) => error!("error: {}, writing file model list to {}", e, config.dbfile),
         }
+
+        let target_dir = &config.targets[0];
+        let backup = BackupQueue::new(target_dir.as_str(), files, config.dryrun);
+        let _results = backup.process();
     }
 
     info!("PROCESS COMPLETE {}", "-".repeat(80));
