@@ -1,9 +1,7 @@
 use crate::config::Config;
-use anyhow::Result;
-// use crate::file_store::Command;
-use log::{debug, info};
-// use tokio::sync::{mpsc, oneshot};
 use crate::file_model::FileModel;
+use anyhow::Result;
+use log::{debug, error, info};
 use std::env;
 use std::path::PathBuf;
 use walkdir::WalkDir;
@@ -19,6 +17,22 @@ impl FileWalker {
         let home = env::var("HOME").unwrap();
 
         FileWalker { config, home }
+    }
+
+    /// walk the files and folders
+    pub fn walk_files_and_folders(&self) -> Result<Vec<FileModel>> {
+        let mut files: Vec<FileModel> = Vec::new();
+
+        match self.walk_files() {
+            Ok(mut file_list) => files.append(&mut file_list),
+            Err(e) => error!("error walking files: {}", e),
+        }
+        match self.walk_folders() {
+            Ok(mut file_list) => files.append(&mut file_list),
+            Err(e) => error!("error walking files: {}", e),
+        }
+
+        Ok(files)
     }
 
     /// walk all the folders and files specified in config source folders and files

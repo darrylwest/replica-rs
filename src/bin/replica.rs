@@ -3,10 +3,10 @@
 
 use anyhow::Result;
 use clap::Parser;
-use log::{error, info, warn};
-use replica::backup_queue::BackupQueue;
+use log::{info, warn};
+// use replica::backup_queue::BackupQueue;
+// use replica::file_model::FileModel;
 use replica::config::Config;
-use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
 use std::env;
 
@@ -26,6 +26,13 @@ pub struct Cli {
     pub dryrun: bool,
 }
 
+/// cd to home folder; panic on fail
+fn cd_app_home(app_home: &str) {
+    let msg = format!("Change to app home: {}", app_home);
+    info!("{}", msg.as_str());
+    env::set_current_dir(app_home).unwrap_or_else(|_| panic!("{}", msg));
+}
+
 /// TODO: refactor this to multiple methods
 fn run(cli: Cli) -> Result<()> {
     let config = match Config::read_config(cli.config.as_str()) {
@@ -39,70 +46,17 @@ fn run(cli: Cli) -> Result<()> {
     config.start_logger()?;
 
     info!("replica config: {:?}", config);
-
-    let app_home = config.home.as_str();
-    let msg = format!("Change to app home: {}", app_home);
-    info!("{}", msg.as_str());
-    env::set_current_dir(app_home).unwrap_or_else(|_| panic!("{}", msg));
+    cd_app_home(config.home.as_str());
 
     if cli.dryrun {
         warn!("THIS IS A DRY RUN!");
     }
 
-    // map with filename as key
-    let mut dbref = FileModel::read_dbfile(&config.dbfile)?;
-    let file_walker = FileWalker::new(config.clone());
-
-    // create the file reader
-
-    let mut files: Vec<FileModel> = Vec::new();
-    for model in file_walker.walk_files()?.iter() {
-        files.push(model.clone());
+    let walker = FileWalker::new(config.clone());
+    if let Ok(files) = walker.walk_files_and_folders() {
+        info!("file count: {}", files.len());
+        // now compare and update if necessary
     }
-
-    // write the files that were just read
-    FileModel::write_dbfile(&config.dbfile, dbref.clone())?;
-
-    let mut queue: Vec<FileModel> = Vec::new();
-    info!("total count: {}", files.len());
-    for file in files.iter() {
-        let p = file.relative_path();
-        if cli.verbose {
-            info!(
-                "{} {} {} {:?} {}",
-                p, file.len, file.modified, file.last_saved, file.hash
-            );
-        }
-
-        if let Some(file_ref) = dbref.insert(file.path.clone(), file.clone()) {
-            let rmod = file_ref.modified;
-            let fmod = file.modified;
-            if rmod != fmod {
-                info!("QUEUE: {}: {} = {}", p, rmod, fmod);
-                queue.push(file.clone())
-            }
-        }
-    }
-
-    info!("queue count: {}", queue.len());
-    if queue.is_empty() {
-        info!("zero files to backup");
-        info!("PROCESS COMPLETE {}", "-".repeat(80));
-        return Ok(());
-    }
-
-    let backup = BackupQueue::new("test", queue, config.dryrun);
-    match backup.process() {
-        Ok(saved) => {
-            info!("update the db reference, len: {}", saved.len());
-        }
-        Err(e) => {
-            error!("backup failed: {e}");
-            return Err(e);
-        }
-    }
-
-    FileModel::write_dbfile(&config.dbfile, dbref)?;
 
     info!("PROCESS COMPLETE {}", "-".repeat(80));
 
@@ -111,7 +65,7 @@ fn run(cli: Cli) -> Result<()> {
 
 fn main() -> Result<()> {
     let home = env::var("HOME").expect("The user should have a home folder.");
-    env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
+    cd_app_home(home.as_str());
 
     run(Cli::parse())
 }
@@ -140,5 +94,11 @@ mod tests {
                 assert!(false);
             }
         }
+    }
+
+    #[test]
+    fn test_app_home() {
+        let home = env::var("HOME").expect("The user should have a home folder.");
+        cd_app_home(home.as_str());
     }
 }
