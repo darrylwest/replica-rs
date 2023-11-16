@@ -13,6 +13,10 @@ use std::env;
 #[derive(Clone, Debug, Default, Parser)]
 #[clap(name = "replica", author, version, about, long_about = None)]
 pub struct Cli {
+    /// set and alternate configuration file
+    #[clap(short, long, value_parser, default_value_t = String::from(".replica/config/config.toml"))]
+    pub config: String,
+
     /// set verbose to log to console
     #[clap(short, long, value_parser)]
     pub verbose: bool,
@@ -24,7 +28,14 @@ pub struct Cli {
 
 /// TODO: refactor this to multiple methods
 fn run(cli: Cli) -> Result<()> {
-    let config = Config::read_config(".replica/config/config.toml")?;
+    let config = match Config::read_config(cli.config.as_str()) {
+        Ok(conf) => conf,
+        Err(e) => {
+            eprintln!("error parsing configuration file: {:?}", cli.config);
+            return Err(e);
+        }
+    };
+
     config.start_logger()?;
 
     info!("replica config: {:?}", config);
@@ -107,6 +118,7 @@ mod tests {
     fn run_test() {
         println!("cwd: {:?}", env::current_dir().unwrap());
         let cli = Cli {
+            config: String::from("tests/config.toml"),
             verbose: true,
             dryrun: true,
         };
