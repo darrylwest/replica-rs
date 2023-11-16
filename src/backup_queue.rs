@@ -1,10 +1,10 @@
+use crate::file_model::FileModel;
 /// Backup Queue to save queued files to targets
 ///
 /// create with target folder and queue vector; return the list of saved files updated with save date
 ///
 use anyhow::Result;
-// use chrono::{NaiveDate, NaiveDateTime};
-use crate::file_model::FileModel;
+use chrono::Utc;
 use log::{info, warn};
 use std::path::PathBuf;
 
@@ -26,8 +26,10 @@ impl BackupQueue {
         warn!("not implemented yet");
         let mut saved: Vec<FileModel> = Vec::new();
 
-        for model in self.queue.clone() {
-            // model.last_saved = Some(NaiveDateTime::
+        for mut model in self.queue.clone() {
+            let now = Utc::now().naive_utc();
+            model.last_saved = Some(now);
+
             saved.push(model);
         }
 

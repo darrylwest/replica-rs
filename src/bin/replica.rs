@@ -43,6 +43,9 @@ fn run(cli: Cli) -> Result<()> {
         files.push(model.clone());
     }
 
+    // write the files that were just read
+    FileModel::write_dbfile(&config.dbfile, dbref.clone())?;
+
     let mut queue: Vec<FileModel> = Vec::new();
     info!("total count: {}", files.len());
     for file in files.iter() {
@@ -65,6 +68,12 @@ fn run(cli: Cli) -> Result<()> {
     }
 
     info!("queue count: {}", queue.len());
+    if queue.is_empty() {
+        info!("zero files to backup");
+        info!("PROCESS COMPLETE {}", "-".repeat(80));
+        return Ok(());
+    }
+
     let backup = BackupQueue::new("test", queue);
     match backup.process() {
         Ok(saved) => {
@@ -96,6 +105,7 @@ mod tests {
 
     #[test]
     fn run_test() {
+        println!("cwd: {:?}", env::current_dir().unwrap());
         let cli = Cli {
             verbose: true,
             dryrun: true,
