@@ -11,14 +11,16 @@ use std::path::PathBuf;
 pub struct BackupQueue {
     pub target: PathBuf,
     pub queue: Vec<FileModel>,
+    pub dryrun: bool,
 }
 
 impl BackupQueue {
-    pub fn new(path: &str, queue: Vec<FileModel>) -> BackupQueue {
+    pub fn new(path: &str, queue: Vec<FileModel>, dryrun: bool) -> BackupQueue {
         info!("create the backup queue.");
         BackupQueue {
             target: PathBuf::from(path),
             queue,
+            dryrun,
         }
     }
 
@@ -53,7 +55,7 @@ mod tests {
         let queue = create_queue();
 
         let qlen = queue.len();
-        let backup = BackupQueue::new(path, queue);
+        let backup = BackupQueue::new(path, queue, true);
         assert_eq!(backup.queue.len(), qlen);
     }
 
@@ -63,7 +65,7 @@ mod tests {
         let queue = create_queue();
 
         let qlen = queue.len();
-        let backup = BackupQueue::new(path, queue);
+        let backup = BackupQueue::new(path, queue, true);
 
         if let Ok(saved) = backup.process() {
             assert!(saved.len() == qlen);

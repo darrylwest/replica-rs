@@ -21,8 +21,9 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] run from crontab to test
 * [x] modify tests to remove $HOME dependency
 * [x] change logging to only log what was queued and backed up
-* [-] implement queue vector and backup_queue module to save files to backup target
-* [ ] improve error handling
+* [x] implement queue vector and backup_queue module to 
+* [-] save files to backup target
+* [-] improve error handling
 * [ ] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
 * [ ] implement supervisor to check backups and generate a status report (daily)
@@ -43,5 +44,5 @@ All machines run supervisor check all machines that have replica enabled to chec
 * read all; make updates; write/store all
 * file model struct with path, hash, len, modified and last_saved
 
-###### dpw | 2023.11.14
+###### dpw | 2023.11.15
 

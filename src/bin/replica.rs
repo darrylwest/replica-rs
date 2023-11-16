@@ -39,6 +39,12 @@ fn run(cli: Cli) -> Result<()> {
     config.start_logger()?;
 
     info!("replica config: {:?}", config);
+
+    let app_home = config.home.as_str();
+    let msg = format!("should be able to change to config home: {}", app_home);
+    info!("{}", msg.as_str());
+    env::set_current_dir(app_home).expect(msg.as_str());
+
     if cli.dryrun {
         warn!("THIS IS A DRY RUN!");
     }
@@ -85,7 +91,7 @@ fn run(cli: Cli) -> Result<()> {
         return Ok(());
     }
 
-    let backup = BackupQueue::new("test", queue);
+    let backup = BackupQueue::new("test", queue, config.dryrun);
     match backup.process() {
         Ok(saved) => {
             info!("update the db reference, len: {}", saved.len());
@@ -104,9 +110,6 @@ fn run(cli: Cli) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let home = env::var("HOME").expect("The user should have a home folder.");
-    env::set_current_dir(home.clone()).expect("should be able to change directory to home.");
-
     run(Cli::parse())
 }
 
@@ -116,9 +119,11 @@ mod tests {
 
     #[test]
     fn run_test() {
-        println!("cwd: {:?}", env::current_dir().unwrap());
+        let home = env::var("HOME").expect("The user should have a home folder.");
+        let conf_path = format!("{}{}", home, "/.replica/config/config.toml");
+        println!("conf path : {:?}", conf_path);
         let cli = Cli {
-            config: String::from("tests/config.toml"),
+            config: conf_path,
             verbose: true,
             dryrun: true,
         };
