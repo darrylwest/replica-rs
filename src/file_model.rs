@@ -2,7 +2,6 @@
 ///
 use anyhow::Result;
 use chrono::naive::NaiveDateTime;
-use hashbrown::HashMap;
 use log::{info, warn};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
@@ -51,15 +50,15 @@ impl FileModel {
     }
 
     /// read the db file
-    pub fn read_dbfile(filename: &str) -> Result<HashMap<PathBuf, FileModel>> {
+    pub fn read_dbfile(filename: &str) -> Result<Vec<FileModel>> {
         // check to see if the file exists...
-        info!("read dbfile: {}", filename);
+        info!("read db model list: {}", filename);
         let file = match File::open(filename) {
             Ok(file) => file,
             Err(e) => {
-                warn!("creating a new empty hashmap: {}", e);
-                let map: HashMap<PathBuf, FileModel> = HashMap::new();
-                return Ok(map);
+                warn!("creating a new empty list: {}", e);
+                let list: Vec<FileModel> = Vec::new();
+                return Ok(list);
             }
         };
 
@@ -68,14 +67,14 @@ impl FileModel {
         let mut text = String::new();
         reader.read_to_string(&mut text)?;
 
-        let map: HashMap<PathBuf, FileModel> = serde_json::from_str(&text)?;
+        let list: Vec<FileModel> = serde_json::from_str(&text)?;
 
-        Ok(map)
+        Ok(list)
     }
 
     /// save the list of file models to disk
-    pub fn write_dbfile(filename: &str, list: HashMap<PathBuf, FileModel>) -> Result<()> {
-        info!("write models to file: {}", filename);
+    pub fn write_dbfile(filename: &str, list: Vec<FileModel>) -> Result<()> {
+        info!("write model list to file: {}", filename);
         let json = serde_json::to_string_pretty(&list).unwrap();
 
         let mut buf = File::create(filename)?;
@@ -113,7 +112,7 @@ mod tests {
 
     #[test]
     fn read_dbfile() {
-        let filename = ".replica/data/files.json";
+        let filename = ".replica/data/no-files.json";
         let list = FileModel::read_dbfile(filename).expect("a vector of file models");
 
         assert_eq!(list.len(), 0);

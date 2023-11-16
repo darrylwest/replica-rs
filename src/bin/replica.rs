@@ -3,10 +3,10 @@
 
 use anyhow::Result;
 use clap::Parser;
-use log::{info, warn};
+use log::{error, info, warn};
 // use replica::backup_queue::BackupQueue;
-// use replica::file_model::FileModel;
 use replica::config::Config;
+use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
 use std::env;
 
@@ -56,6 +56,10 @@ fn run(cli: Cli) -> Result<()> {
     if let Ok(files) = walker.walk_files_and_folders() {
         info!("file count: {}", files.len());
         // now compare and update if necessary
+        match FileModel::write_dbfile(&config.dbfile, files) {
+            Ok(()) => info!("file model list written to {}", config.dbfile),
+            Err(e) => error!("error: {}, writing file model list to {}", e, config.dbfile),
+        }
     }
 
     info!("PROCESS COMPLETE {}", "-".repeat(80));
