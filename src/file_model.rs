@@ -3,7 +3,7 @@
 use anyhow::Result;
 use chrono::naive::NaiveDateTime;
 use hashbrown::HashMap;
-use log::info;
+use log::{info, warn};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -52,8 +52,17 @@ impl FileModel {
 
     /// read the db file
     pub fn read_dbfile(filename: &str) -> Result<HashMap<PathBuf, FileModel>> {
+        // check to see if the file exists...
         info!("read dbfile: {}", filename);
-        let file = File::open(filename)?;
+        let file = match File::open(filename) {
+            Ok(file) => file,
+            Err(e) => {
+                warn!("creating a new empty hashmap: {}", e);
+                let map: HashMap<PathBuf, FileModel> = HashMap::new();
+                return Ok(map);
+            }
+        };
+
         let mut reader = BufReader::new(file);
 
         let mut text = String::new();
