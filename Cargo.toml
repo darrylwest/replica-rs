@@ -1,6 +1,6 @@
 [package]
 name = "replica"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 authors = ["darryl.west@raincitysoftware.com"]
 rust-version = "1.70"
@@ -31,3 +31,9 @@ openssl = "0.10.43"
 hex = "0.4.3"
 walkdir = "2.3.2"
 subprocess = "0.2.9"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+enum_glob_use = "deny"

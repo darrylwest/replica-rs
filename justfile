@@ -19,6 +19,10 @@ test-all:
     clear
     cargo test -- --include-ignored && just format
 
+# clean the project
+clean:
+    cargo clean
+
 # build the debug target
 build:
     clear
