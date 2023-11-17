@@ -29,6 +29,8 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
 * [ ] implement supervisor to check backups by reading data/files.json and generate a status report (daily)
+* [ ] add unit tests to get > 95% coverage
+* [ ] determine how to do journaled backups to enable going back to an earlier version
 
 ## Data Flow Procedures
 
