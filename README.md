@@ -23,14 +23,16 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] change logging to only log what was queued and backed up
 * [x] implement queue vector and backup_queue module to 
 * [x] save files to backup target
-* [ ] modify to write to all targets (if possible)
+* [ ] modify to write to all targets in the list (if possible)
 * [x] improve error handling
 * [ ] replace string manupulation for std::path::{Path, PathBuf}
 * [x] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
-* [ ] implement supervisor to check backups by reading data/files.json and generate a status report (daily)
+* [ ] implement src/bin/replica-monitor to check backups by reading data/files.json and generate a status report (daily)
 * [ ] add unit tests to get > 95% coverage
 * [ ] determine how to do journaled backups to enable going back to an earlier version
+* [ ] add version to begining log message
+* [ ] log and error when a specified file is not found
 
 ## Data Flow Procedures
 
