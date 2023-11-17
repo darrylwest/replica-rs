@@ -9,6 +9,7 @@ use replica::config::Config;
 use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
 use std::env;
+use std::time::Instant;
 
 #[derive(Clone, Debug, Default, Parser)]
 #[clap(name = "replica", author, version, about, long_about = None)]
@@ -35,6 +36,7 @@ fn cd_app_home(app_home: &str) {
 
 /// TODO: refactor this to multiple methods
 fn run(cli: Cli) -> Result<()> {
+    let start_time = Instant::now();
     let config = match Config::read_config(cli.config.as_str()) {
         Ok(conf) => conf,
         Err(e) => {
@@ -71,6 +73,8 @@ fn run(cli: Cli) -> Result<()> {
         }
     }
 
+    let elapsed = (start_time.elapsed().as_nanos() as f64) / 1_000_000_000.0;
+    info!("process time: {} seconds", elapsed);
     info!("PROCESS COMPLETE {}", "-".repeat(80));
 
     Ok(())
