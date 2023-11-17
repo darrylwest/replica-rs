@@ -11,7 +11,6 @@ use std::{
 pub struct Config {
     pub name: String,
     pub version: String,
-    pub dryrun: bool,
     pub home: String,
     pub logging_config: String,
     pub source_folders: Vec<String>,
@@ -32,10 +31,7 @@ impl Config {
         reader.read_to_string(&mut text)?;
         let config: Config = toml::from_str(&text).unwrap();
 
-        info!(
-            "config: {}, version: {}, dryrun: {}",
-            config.name, config.version, config.dryrun,
-        );
+        info!("config: {}, version: {}", config.name, config.version);
 
         Ok(config)
     }
@@ -45,7 +41,6 @@ impl Config {
         Config {
             name: self.name.to_string(),
             version: self.version.to_string(),
-            dryrun: self.dryrun,
             home: self.home.to_string(),
             logging_config: self.logging_config.to_string(),
             source_folders: self.source_folders.clone(),

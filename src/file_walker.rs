@@ -43,13 +43,15 @@ impl FileWalker {
         for file in self.config.files.iter() {
             let pbuf: PathBuf = [&self.home, file].iter().collect();
 
-            let path = pbuf.as_path();
-            if path.is_file() && path.exists() {
-                debug!("{}", &pbuf.display());
-                let model = FileModel::new(pbuf.to_str().unwrap());
-                let model = model.read_metadata()?;
+            if pbuf.is_file() {
+                let path = pbuf.as_path();
+                if path.is_file() && path.exists() {
+                    debug!("{}", &pbuf.display());
+                    let model = FileModel::new(pbuf.to_str().unwrap());
+                    let model = model.read_metadata()?;
 
-                files.push(model);
+                    files.push(model);
+                }
             }
         }
 
@@ -71,6 +73,11 @@ impl FileWalker {
                 let meta = entry.metadata()?;
                 let pbuf = entry.into_path();
                 let path = pbuf.as_path();
+
+                if path.is_symlink() {
+                    debug!("symlink: {}", path.display());
+                    continue;
+                }
 
                 if path.is_file() {
                     let modified = meta.modified()?;

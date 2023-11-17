@@ -22,7 +22,7 @@ pub struct Cli {
     pub verbose: bool,
 
     /// run the full db read, file walker, queue but skip process queue
-    #[clap(short, long, value_parser, default_value_t = true)]
+    #[clap(short, long, value_parser, default_value_t = false)]
     pub dryrun: bool,
 }
 
@@ -62,7 +62,7 @@ fn run(cli: Cli) -> Result<()> {
         }
 
         let target_dir = &config.targets[0];
-        let backup = BackupQueue::new(target_dir.as_str(), files, config.dryrun);
+        let backup = BackupQueue::new(target_dir.as_str(), files, cli.dryrun);
         let results = backup.process();
         if results.is_ok() {
             info!("{} files backed up.", results.unwrap().len());

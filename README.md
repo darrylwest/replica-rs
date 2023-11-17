@@ -22,12 +22,13 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [x] modify tests to remove $HOME dependency
 * [x] change logging to only log what was queued and backed up
 * [x] implement queue vector and backup_queue module to 
-* [-] save files to backup target
-* [-] improve error handling
+* [x] save files to backup target
+* [ ] modify to write to all targets (if possible)
+* [x] improve error handling
 * [ ] replace string manupulation for std::path::{Path, PathBuf}
-* [ ] implement file writes to target backup
+* [x] implement file writes to target backup
 * [ ] add exclude or ignore patterns in config
-* [ ] implement supervisor to check backups and generate a status report (daily)
+* [ ] implement supervisor to check backups by reading data/files.json and generate a status report (daily)
 
 ## Data Flow Procedures
 
@@ -45,5 +46,5 @@ All machines run supervisor check all machines that have replica enabled to chec
 * read all; make updates; write/store all
 * file model struct with path, hash, len, modified and last_saved
 
-###### dpw | 2023.11.15
+###### dpw | 2023.11.16
 

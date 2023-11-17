@@ -22,6 +22,8 @@ impl BackupQueue {
             tp.push('/');
         }
 
+        info!("dryrun = {}", dryrun);
+
         BackupQueue {
             target: PathBuf::from(tp),
             files,
@@ -78,7 +80,9 @@ impl BackupQueue {
             target_model = target_model.read_metadata().unwrap();
             // assume they are the same...
 
-            if target_model.len == ref_model.len && target_model.modified == ref_model.modified {
+            // TODO: need to compare hashes
+            if target_model.len == ref_model.len {
+                // && target_model.modified < ref_model.modified {
                 return None;
             }
         }
