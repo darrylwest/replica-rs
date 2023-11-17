@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::file_model::FileModel;
 use anyhow::Result;
-use log::{debug, info, warn, error};
+use log::{debug, error, info};
 use std::env;
 use std::path::PathBuf;
 use walkdir::WalkDir;
@@ -53,7 +53,7 @@ impl FileWalker {
                     files.push(model);
                 }
             } else {
-                warn!("{} not found", pbuf.display());
+                error!("{} not found", pbuf.display());
             }
         }
 

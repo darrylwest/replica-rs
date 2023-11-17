@@ -7,6 +7,8 @@ use std::{
     io::{BufReader, Read},
 };
 
+use crate::VERSION;
+
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct Config {
     pub name: String,
@@ -56,6 +58,7 @@ impl Config {
     pub fn start_logger(&self) -> Result<()> {
         log4rs::init_file(&self.logging_config, Default::default())?;
         info!("START LOGGER: {}", "-".repeat(80));
+        info!("replica version: {}", VERSION);
 
         Ok(())
     }
