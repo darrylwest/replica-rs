@@ -1,14 +1,13 @@
 name = "test-replica"
 version = "0.1.1"
-dryrun = false
-home = ".replica"
+home = ""
 logging_config = ".replica/config/console.yaml"
-targets = ["tests/target/"]
-source_folders = [ "tests/data" ]
+targets = ["/tmp/junk"]
+source_folders = [ ".config" ]
 files = [ 
-    ".gitignore",
-    "tests/.motd",
-    "tests/.profile",
+    ".motd",
+    ".profile",
+    ".zshrc",
 ]
 dbfile = ".replica/data/files.json"
 compress = false

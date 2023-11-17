@@ -1,18 +1,18 @@
 appenders:
   file:
     kind: rolling_file
-    path: "logs/current-key-service.log"
+    path: ".replica/logs/replica.log"
     encoder:
-      pattern: "{d(%Y-%m-%d %H:%M:%S.%s)(utc)} [{f}:{L}] - {h({l})}: {M}:{m}{n}"
+      pattern: "{d(%Y-%m-%d %H:%M:%S.%s)(utc)} [{f}:{L}] - {h({l})}: {m}{n}"
     policy:
       trigger:
         kind: size
-        limit: 250kb
+        limit: 100kb
       roller:
         kind: fixed_window
         base: 1
         count: 5
-        pattern: "logs/rolled-key-service.{}.log"
+        pattern: ".replica/logs/rolled-replica.{}.log"
 root:
   level: info
   appenders:

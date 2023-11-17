@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::file_model::FileModel;
 use anyhow::Result;
-use log::{debug, error, info};
+use log::{debug, info, warn, error};
 use std::env;
 use std::path::PathBuf;
 use walkdir::WalkDir;
@@ -52,6 +52,8 @@ impl FileWalker {
 
                     files.push(model);
                 }
+            } else {
+                warn!("{} not found", pbuf.display());
             }
         }
 
@@ -112,10 +114,18 @@ mod tests {
 
     #[test]
     fn walk_files() {
-        let config = Config::read_config("tests/config.toml").unwrap();
+        let config = Config::read_config(".replica/config/config.toml").unwrap();
         let walker = FileWalker::new(config.clone());
 
-        let list = walker.walk_files();
+        let home = env::var("HOME").expect("The user should have a home folder.");
+        env::set_current_dir(home).unwrap_or_else(|_| panic!("can't cd to home"));
+
+        let file_count = walker.config.files.len();
+        println!("{:?} count: {}", walker.config.files, file_count);
+
+        let list = walker.walk_files().expect("should return ok");
+
         println!("{:?}", list);
+        assert_eq!(list.len(), file_count);
     }
 }
