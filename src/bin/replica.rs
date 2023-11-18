@@ -99,15 +99,8 @@ mod tests {
             dryrun: true,
         };
         println!("{:?}", cli);
-        match run(cli) {
-            Ok(()) => {
-                assert!(true)
-            }
-            Err(e) => {
-                println!("error: {}", e);
-                assert!(false);
-            }
-        }
+        let results = run(cli);
+        assert!(results.is_ok());
     }
 
     #[test]
