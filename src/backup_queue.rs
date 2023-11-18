@@ -1,8 +1,8 @@
-use crate::file_model::FileModel;
 /// Backup Queue to save queued files to targets
 ///
 /// create with target folder and queue vector; return the list of saved files updated with save date
 ///
+use crate::file_model::FileModel;
 use anyhow::{anyhow, Result};
 use chrono::Utc;
 use log::{debug, error, info};
@@ -165,4 +165,36 @@ mod tests {
 
         assert!(true);
     }
+
+    #[test]
+    fn match_files() {
+
+        let src = FileModel::new("tests/file2.txt");
+        let src = src.read_metadata().unwrap();
+        let dest = Path::new("tests/tback/file2.txt");
+        println!("src: {:?}, dest: {}", src, dest.display());
+
+        let backup = BackupQueue::new("./", vec![], true);
+        let response = backup.match_files(&src, dest);
+
+        println!("{:?}", response);
+        assert!(response.is_none());
+    }
+
+
+    #[test]
+    fn match_different_files() {
+
+        let src = FileModel::new("tests/file1.txt");
+        let src = src.read_metadata().unwrap();
+        let dest = Path::new("tests/tback/file1.txt");
+        println!("src: {:?}, dest: {}", src, dest.display());
+
+        let backup = BackupQueue::new("./", vec![], true);
+        let response = backup.match_files(&src, dest);
+
+        println!("{:?}", response);
+        assert!(response.is_some());
+    }
 }
+

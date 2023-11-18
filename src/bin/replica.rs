@@ -37,13 +37,7 @@ fn cd_app_home(app_home: &str) {
 /// TODO: refactor this to multiple methods
 fn run(cli: Cli) -> Result<()> {
     let start_time = Instant::now();
-    let config = match Config::read_config(cli.config.as_str()) {
-        Ok(conf) => conf,
-        Err(e) => {
-            eprintln!("error parsing configuration file: {:?}", cli.config);
-            return Err(e);
-        }
-    };
+    let config = Config::read_config(cli.config.as_str())?;
 
     config.start_logger()?;
 

@@ -99,6 +99,16 @@ mod tests {
     }
 
     #[test]
+    fn copy() {
+        let refc = Config::read_config(".test-replica/config/config.toml").unwrap();
+
+        let config = refc.copy();
+
+        assert_eq!(refc.name, config.name);
+        assert_eq!(refc.version, config.version);
+    }
+
+    #[test]
     fn write_remove_pid_file() {
         let pid = std::process::id().to_string();
         Config::write_pid_file();
