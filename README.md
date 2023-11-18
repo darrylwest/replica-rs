@@ -10,7 +10,7 @@
 
 ## Overview
 
-Supervised backups...
+Supervised file backups.
 
 All machines run supervisor check all machines that have replica enabled to check for any errors.  Summary report(s) created and emailed.
 
@@ -18,22 +18,22 @@ All machines run supervisor check all machines that have replica enabled to chec
 
 ### In Process
 
-* [-] improve error handling
-* [-] improve unit tests
+* [ ] implement exclude/ignore patterns in config
 
 ### Planned
 
-* [ ] find a substitute for crontab on mac to get around prompt to write to external devices on mac
-* [ ] modify to write to all targets in the list (if possible)
-* [ ] replace string manupulation for std::path::{Path, PathBuf}
-* [ ] add exclude or ignore patterns in config
-* [ ] add unit tests to get > 95% coverage
 * [ ] determine how to do journaled backups to enable going back to an earlier version
 * [ ] implement replica-monitor to check backups by reading data/files.json; generate a web report
 * [ ] implement new-files.rs to list files that are not in being backed up
+* [ ] replace string manupulation for std::path::{Path, PathBuf}
+* [ ] modify to write to all targets in the list (if possible)
+* [ ] find a substitute for crontab on mac to get around prompt to write to external devices on mac
 
 ### Completed
 
+* [x] improve error handling
+* [x] improve unit tests: 94.0%
+* [x] modify HOME to enable running main (breaks when running coverage)
 * [x] add process.rs and mv main.rs to bin/replica.rs
 * [x] add CLI
 * [x] run from crontab to test
@@ -60,5 +60,5 @@ All machines run supervisor check all machines that have replica enabled to chec
 * read file system; do backups; write filelist
 * file model struct with path, hash, len, modified and last_saved
 
-###### dpw | 2023.11.17
+###### dpw | 2023.11.18
 

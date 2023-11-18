@@ -83,12 +83,7 @@ impl FileWalker {
                 if path.is_file() {
                     let modified = meta.modified()?;
                     let modified = modified.duration_since(std::time::SystemTime::UNIX_EPOCH)?;
-                    debug!(
-                        "{} {} {}",
-                        &pbuf.display(),
-                        meta.len(),
-                        modified.as_micros()
-                    );
+                    // debug!("{} {} {}", &pbuf.display(), meta.len(), modified.as_micros());
                     let model = FileModel::from(pbuf, meta.len(), modified.as_micros() as u64);
                     files.push(model);
                 }
@@ -104,14 +99,27 @@ mod tests {
     use super::*;
 
     #[test]
+    fn walk_files_and_folders() {
+        // cd_test_home();
+        let mut config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
+        config.files = vec![String::from("bad.txt"), String::from("even-worse.txt")];
+        config.source_folders = vec![String::from("bad.txt"), String::from("even-worse.txt")];
+        let walker = FileWalker::new(config.clone());
+
+        let files = walker.walk_files_and_folders().unwrap();
+        println!("{:?}", files);
+        assert_eq!(files.len(), 0);
+    }
+
+    #[test]
     fn walk_folders() {
         // cd_test_home();
         let config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
         let walker = FileWalker::new(config.clone());
 
-        let files = walker.walk_folders().unwrap();
+        let files = walker.walk_files_and_folders().unwrap();
         println!("{:?}", files);
-        assert_eq!(files.len(), 2);
+        assert_eq!(files.len(), 5);
     }
 
     #[test]
