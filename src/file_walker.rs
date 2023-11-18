@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn walk_folders() {
         // cd_test_home();
-        let config = Config::read_config("tests/.replica/config/walk-config.toml").unwrap();
+        let config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
         let walker = FileWalker::new(config.clone());
 
         let files = walker.walk_folders().unwrap();
@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn walk_files() {
         // cd_test_home();
-        let config = Config::read_config("tests/.replica/config/walk-config.toml").unwrap();
+        let config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
         println!("{:?}", config);
         let walker = FileWalker::new(config.clone());
 

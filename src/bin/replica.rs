@@ -93,13 +93,11 @@ mod tests {
 
     #[test]
     fn run_test() {
-        let cwd = env::current_dir().expect("should get the current working directory");
-        println!("{}", cwd.display());
-
-        let test_home = "./tests";
-        env::set_current_dir(test_home).unwrap_or_else(|_| panic!("could not cd to {}", test_home));
-
-        let conf_path = String::from(".replica/config/run-config.toml");
+        let test_home = env::current_dir().expect("should get the current working directory");
+        let conf_path = format!(
+            "{}/.test-replica/config/run-config.toml",
+            test_home.to_str().unwrap()
+        );
         println!("conf path : {:?}", conf_path);
         let cli = Cli {
             config: conf_path,
@@ -116,9 +114,6 @@ mod tests {
                 assert!(false);
             }
         }
-
-        env::set_current_dir(cwd.as_path())
-            .unwrap_or_else(|_| panic!("could not cd to {}", cwd.display()));
     }
 
     #[test]
