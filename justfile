@@ -9,18 +9,22 @@ alias fmt := format
 
 os := `uname`
 
+
 # run the standard tests
 test:
     clear
+    /bin/rm -fr tests/tback-tmp
     cargo test
 
 # run the standard tests + clippy and fmt
 test-all:
     clear
+    /bin/rm -fr tests/tback-tmp
     cargo test -- --include-ignored && just format
 
 # clean the project
 clean:
+    /bin/rm -fr tests/tback-tmp
     cargo clean
 
 # build the debug target
@@ -51,11 +55,12 @@ watch:
 
 # cover - runs code test coverage report and writes to coverage folder
 cover:
-  cargo tarpaulin --out html --output-dir coverage && mv coverage/tarpaulin-report.html coverage/index.html
+    /bin/rm -fr tests/tback-tmp
+    cargo tarpaulin --out html --output-dir coverage && mv coverage/tarpaulin-report.html coverage/index.html
 
 # start a http server in the coverage folder
 serve-cover:
-  cd coverage && python3 -m http.server 8080
+    cd coverage && python3 -m http.server 8080
 
 # merge the develop branch to main
 merge:

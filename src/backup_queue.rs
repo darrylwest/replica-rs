@@ -167,8 +167,34 @@ mod tests {
     }
 
     #[test]
-    fn match_files() {
+    fn copy_model() {
+        let src = Path::new("tests/file3.txt");
+        let dest = FileModel::new("tests/tback/file3.txt");
+        println!("src: {}, dest: {:?}", src.display(), dest);
 
+        let backup = BackupQueue::new("./", vec![], false);
+        let response = backup.copy_model(src, dest);
+
+        println!("{:?}", response);
+        assert!(response.is_ok());
+    }
+
+    #[test]
+    fn copy_new_folder() {
+        let src = Path::new("tests/file3.txt");
+        let dest = Path::new("tests/tback-tmp/file3.txt");
+
+        println!("src: {}, dest: {:?}", src.display(), dest.display());
+
+        let backup = BackupQueue::new("./", vec![], false);
+        let response = backup.copy(src, dest);
+
+        println!("{:?}", response);
+        assert!(response.is_ok());
+    }
+
+    #[test]
+    fn match_files() {
         let src = FileModel::new("tests/file2.txt");
         let src = src.read_metadata().unwrap();
         let dest = Path::new("tests/tback/file2.txt");
@@ -181,10 +207,8 @@ mod tests {
         assert!(response.is_none());
     }
 
-
     #[test]
     fn match_different_files() {
-
         let src = FileModel::new("tests/file1.txt");
         let src = src.read_metadata().unwrap();
         let dest = Path::new("tests/tback/file1.txt");
@@ -197,4 +221,3 @@ mod tests {
         assert!(response.is_some());
     }
 }
-
