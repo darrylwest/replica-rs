@@ -98,7 +98,7 @@ mod tests {
 
         let test_home = "./tests";
         env::set_current_dir(test_home).unwrap_or_else(|_| panic!("could not cd to {}", test_home));
-        
+
         let conf_path = String::from(".replica/config/run-config.toml");
         println!("conf path : {:?}", conf_path);
         let cli = Cli {
@@ -117,15 +117,14 @@ mod tests {
             }
         }
 
-        env::set_current_dir(cwd.as_path()).unwrap_or_else(|_| panic!("could not cd to {}", cwd.display()));
+        env::set_current_dir(cwd.as_path())
+            .unwrap_or_else(|_| panic!("could not cd to {}", cwd.display()));
     }
 
     #[test]
     fn test_app_home() {
-        let cwd = env::current_dir().expect("should get the current working directory");
-        println!("{}", cwd.display());
-        let home = env::var("HOME").expect("The user should have a home folder.");
-        cd_app_home(home.as_str());
-        env::set_current_dir(cwd.as_path()).unwrap_or_else(|_| panic!("could not cd to {}", cwd.display()));
+        let test_home = env::current_dir().expect("should get the current working directory");
+        println!("{}", test_home.display());
+        cd_app_home(test_home.to_str().unwrap());
     }
 }
