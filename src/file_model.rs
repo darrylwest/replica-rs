@@ -138,7 +138,7 @@ mod tests {
 
     #[test]
     fn read_dbfile() {
-        let filename = ".test-replica/data/files.json";
+        let filename = "tests/data/files.json";
         let list = FileModel::read_dbfile(filename).expect("a vector of file models");
 
         assert_eq!(list.len(), 5);

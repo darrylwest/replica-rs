@@ -1,1 +1,37 @@
-{}
+[
+  {
+    "path": "./tests/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700331937339576,
+    "last_saved": null
+  },
+  {
+    "path": "./tests/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700331937339576,
+    "last_saved": null
+  },
+  {
+    "path": "./tests/big-file.pdf",
+    "hash": "",
+    "len": 474707,
+    "modified": 1699990650530503,
+    "last_saved": null
+  },
+  {
+    "path": "./tests/.config/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700331937339576,
+    "last_saved": null
+  },
+  {
+    "path": "./tests/.config/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700331937339576,
+    "last_saved": null
+  }
+]
