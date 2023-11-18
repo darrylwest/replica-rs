@@ -28,6 +28,8 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [ ] replace string manupulation for std::path::{Path, PathBuf}
 * [ ] modify to write to all targets in the list (if possible)
 * [ ] find a substitute for crontab on mac to get around prompt to write to external devices on mac
+* [ ] documentation and doc tests; move issues to repo issues
+* [ ] make repo public
 
 ### Completed
 
