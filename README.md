@@ -29,8 +29,8 @@ All machines run supervisor check all machines that have replica enabled to chec
 * [ ] add exclude or ignore patterns in config
 * [ ] add unit tests to get > 95% coverage
 * [ ] determine how to do journaled backups to enable going back to an earlier version
-* [ ] implement src/bin/replica-monitor to check backups by reading data/files.json and generate a status report (daily)
-* [ ] implement src/bin/new-files.rs to list files that are not in being backed up that were created after a specific timestamp or duration
+* [ ] implement replica-monitor to check backups by reading data/files.json; generate a web report
+* [ ] implement new-files.rs to list files that are not in being backed up
 
 ### Completed
 

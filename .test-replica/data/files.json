@@ -3,35 +3,35 @@
     "path": "./tests/file1.txt",
     "hash": "",
     "len": 186,
-    "modified": 1700269116013355,
+    "modified": 1700318972809250,
     "last_saved": null
   },
   {
     "path": "./tests/file2.txt",
     "hash": "",
     "len": 19,
-    "modified": 1700269116013355,
+    "modified": 1700318972809376,
     "last_saved": null
   },
   {
     "path": "./tests/big-file.pdf",
     "hash": "",
     "len": 474707,
-    "modified": 1699900987230484,
-    "last_saved": null
-  },
-  {
-    "path": "./tests/.config/file1.txt",
-    "hash": "",
-    "len": 186,
-    "modified": 1700269116013355,
+    "modified": 1669671681515001,
     "last_saved": null
   },
   {
     "path": "./tests/.config/file2.txt",
     "hash": "",
     "len": 19,
-    "modified": 1700269116013355,
+    "modified": 1700318972809114,
+    "last_saved": null
+  },
+  {
+    "path": "./tests/.config/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700318972808754,
     "last_saved": null
   }
 ]
