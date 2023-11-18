@@ -1,0 +1,14 @@
+name = "walk-replica"
+version = "0.1.1"
+home = "./"
+logging_config = "tests/.replica/config/console.yaml"
+targets = ["tback"]
+source_folders = [ "tests/.config" ]
+files = [ 
+    "tests/file1.txt",
+    "tests/file2.txt",
+    "tests/big-file.pdf",
+]
+dbfile = ".replica/data/files.json"
+compress = false
+encrypt = false

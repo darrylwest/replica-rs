@@ -1,0 +1,37 @@
+[
+  {
+    "path": "./file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700269116013355,
+    "last_saved": null
+  },
+  {
+    "path": "./file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700269116013355,
+    "last_saved": null
+  },
+  {
+    "path": "./big-file.pdf",
+    "hash": "",
+    "len": 474707,
+    "modified": 1699900987230484,
+    "last_saved": null
+  },
+  {
+    "path": "./.config/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700269116013355,
+    "last_saved": null
+  },
+  {
+    "path": "./.config/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700269116013355,
+    "last_saved": null
+  }
+]
