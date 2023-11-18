@@ -2,7 +2,6 @@ use crate::config::Config;
 use crate::file_model::FileModel;
 use anyhow::Result;
 use log::{debug, error, info};
-use std::env;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
@@ -14,7 +13,7 @@ pub struct FileWalker {
 impl FileWalker {
     /// create a new FileWalker
     pub fn new(config: Config) -> FileWalker {
-        let home = env::var("HOME").unwrap();
+        let home = config.clone().home;
 
         FileWalker { config, home }
     }
@@ -106,19 +105,19 @@ mod tests {
 
     #[test]
     fn walk_folders() {
-        let config = Config::read_config("tests/config.toml").unwrap();
+        let config = Config::read_config("tests/.replica/config/config.toml").unwrap();
         let walker = FileWalker::new(config.clone());
 
-        let _ = walker.walk_folders();
+        let files = walker.walk_folders().unwrap();
+        println!("{:?}", files);
+        assert_eq!(files.len(), 2);
     }
 
     #[test]
     fn walk_files() {
-        let config = Config::read_config(".replica/config/config.toml").unwrap();
+        let config = Config::read_config("tests/.replica/config/config.toml").unwrap();
+        println!("{:?}", config);
         let walker = FileWalker::new(config.clone());
-
-        let home = env::var("HOME").expect("The user should have a home folder.");
-        env::set_current_dir(home).unwrap_or_else(|_| panic!("can't cd to home"));
 
         let file_count = walker.config.files.len();
         println!("{:?} count: {}", walker.config.files, file_count);

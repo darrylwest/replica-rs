@@ -1,13 +1,13 @@
 name = "test-replica"
 version = "0.1.1"
-home = ""
+home = "./tests"
 logging_config = ".replica/config/console.yaml"
-targets = ["/tmp/junk"]
+targets = ["tback"]
 source_folders = [ ".config" ]
 files = [ 
-    ".motd",
-    ".profile",
-    ".zshrc",
+    "file1.txt",
+    "file2.txt",
+    "big-file.pdf",
 ]
 dbfile = ".replica/data/files.json"
 compress = false

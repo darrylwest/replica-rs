@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn new() {
-        let config = Config::read_config("tests/config.toml").unwrap();
+        let config = Config::read_config("tests/.replica/config/config.toml").unwrap();
         assert!(!config.name.is_empty());
         assert!(!config.version.is_empty());
         assert!(!config.source_folders.is_empty());
