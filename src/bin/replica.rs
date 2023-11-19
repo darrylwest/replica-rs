@@ -86,6 +86,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn find_exepath() {
+        let exepath = match env::current_exe() {
+            Ok(exe_path) => exe_path,
+            Err(e) => panic!("failed to get current exe path: {e}"),
+        };
+
+        println!("exe path: {}", exepath.display());
+    }
+
+    #[test]
     fn run_test() {
         let test_home = env::current_dir().expect("should get the current working directory");
         let conf_path = format!(
