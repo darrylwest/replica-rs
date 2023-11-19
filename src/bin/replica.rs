@@ -64,7 +64,7 @@ fn run(cli: Cli) -> Result<()> {
             let saved_list = results.unwrap();
             info!("{} files backed up.", saved_list.len());
             // now update the db file records
-            update_reference_files(files, saved_list);
+            FileModel::merge_updates(files, saved_list);
         } else {
             error!("{:?}", results);
         }
@@ -77,10 +77,6 @@ fn run(cli: Cli) -> Result<()> {
     Ok(())
 }
 
-/// update the reference files with saved list
-fn update_reference_files(_files: Vec<FileModel>, _saved: Vec<FileModel>) {
-    info!("update the reference files");
-}
 
 fn main() -> Result<()> {
     let home = env::var("HOME").expect("The user should have a home folder.");

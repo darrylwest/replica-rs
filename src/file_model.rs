@@ -4,6 +4,7 @@
 ///
 use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
+use hashbrown::HashMap;
 use log::{info, warn, error};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
@@ -125,6 +126,28 @@ impl FileModel {
         }
         self.path.to_str().unwrap().replace(home.as_str(), "")
     }
+
+    /// update the reference files with saved list
+    pub fn merge_updates(files: Vec<FileModel>, saved: Vec<FileModel>) {
+        info!("update the reference files");
+        fn create_key(model: &FileModel) -> String {
+            let key = model.path.to_str().expect("file path should be a value string");
+            key.to_string()
+        }
+
+        let mut hmap: HashMap<String, FileModel> = files.into_iter().map(|v| (create_key(&v), v)).collect();
+
+        for model in saved {
+            let key = create_key(&model);
+            hmap.insert(key, model);
+        }
+
+        println!("{:?}", hmap);
+
+
+        // map.values().into_iter().map(|_k, v) | v).collect()
+    }
+
 }
 
 #[cfg(test)]
@@ -132,16 +155,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn calc_hash() {
-        let model = FileModel::new("config/config.toml");
-        let content = std::fs::read("tests/big-file.pdf").unwrap();
-        let hash = model.calc_hash(content.as_slice());
+    fn merge_updates() {
+        let filename = "tests/data/files.json";
+        let ref_list = FileModel::read_dbfile(filename).expect("a vector of file models");
+        let filename = "tests/data/saved.json";
+        let saved =FileModel::read_dbfile(filename).expect("a vector of file models");
 
-        println!("hash: {}", hash);
-        assert_eq!(
-            hash,
-            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
-        );
+        FileModel::merge_updates(ref_list, saved);
+
     }
 
     #[test]
@@ -171,4 +192,18 @@ mod tests {
 
         assert_eq!(list.len(), 0);
     }
+
+    #[test]
+    fn calc_hash() {
+        let model = FileModel::new("config/config.toml");
+        let content = std::fs::read("tests/big-file.pdf").unwrap();
+        let hash = model.calc_hash(content.as_slice());
+
+        println!("hash: {}", hash);
+        assert_eq!(
+            hash,
+            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
+        );
+    }
+
 }
