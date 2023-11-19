@@ -1,7 +1,7 @@
 /// File Model - a small database of file names and hash values
 ///
 /// # file Model
-/// 
+///
 use anyhow::Result;
 use chrono::naive::NaiveDateTime;
 use log::{info, warn};
