@@ -1,5 +1,7 @@
 /// Backup Queue to save queued files to targets
 ///
+/// # Backup Queue
+/// 
 /// create with target folder and queue vector; return the list of saved files updated with save date
 ///
 use crate::file_model::FileModel;
