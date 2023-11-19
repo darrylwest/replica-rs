@@ -14,38 +14,9 @@ Supervised file backups.
 
 All machines run supervisor check all machines that have replica enabled to check for any errors.  Summary report(s) created and emailed.
 
-## Issues
-
-### In Process
-
-* [ ] implement exclude/ignore patterns in config
-
-### Planned
-
-* [ ] determine how to do journaled backups to enable going back to an earlier version
-* [ ] implement replica-monitor to check backups by reading data/files.json; generate a web report
-* [ ] implement new-files.rs to list files that are not in being backed up
-* [ ] replace string manupulation for std::path::{Path, PathBuf}
-* [ ] modify to write to all targets in the list (if possible)
-* [ ] find a substitute for crontab on mac to get around prompt to write to external devices on mac
-
-### Completed
-
-* [x] improve error handling
-* [x] improve unit tests: 94.0%
-* [x] modify HOME to enable running main (breaks when running coverage)
-* [x] add process.rs and mv main.rs to bin/replica.rs
-* [x] add CLI
-* [x] run from crontab to test
-* [x] modify tests to remove $HOME dependency
-* [x] change logging to only log what was queued and backed up
-* [x] implement queue vector and backup_queue module to 
-* [x] save files to backup target
-* [x] log and error when a specified file is not found
-* [x] implement file writes to target backup
-* [x] add version to begining log message
-
 ## Data Flow Procedures
+
+_TODO: Put this into a flow-charty thing_
 
 * read from default or specified config file
 * change to app home folder (usually HOME)
@@ -54,11 +25,19 @@ All machines run supervisor check all machines that have replica enabled to chec
 * write any files that need to be backed up
 * run each 5 minutes
 
+## Config
+
 ## Database
 
 * json file(s) from serde/HashBrown
 * read file system; do backups; write filelist
 * file model struct with path, hash, len, modified and last_saved
 
-###### dpw | 2023.11.18
+
+## Issues
+
+[Github Issue List](https://github.com/darrylwest/replica-rs/issues)
+[Code Coverage Report](https://raincitysoftware.com/replica/)
+
+###### dpw | 2023.11.19
 
