@@ -12,9 +12,11 @@ use std::env;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
+use domain_keys::keys::RouteKey;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileModel {
+    pub key: String,
     pub path: PathBuf,
     pub hash: String,
     pub len: u64,
@@ -25,6 +27,7 @@ pub struct FileModel {
 impl FileModel {
     pub fn new(path: &str) -> FileModel {
         FileModel {
+            key: RouteKey::create(),
             path: PathBuf::from(path),
             hash: "".into(),
             len: 0,
@@ -35,6 +38,7 @@ impl FileModel {
 
     pub fn from(path: PathBuf, len: u64, modified: u64) -> FileModel {
         FileModel {
+            key: RouteKey::create(),
             path,
             hash: "".into(),
             len,
@@ -46,6 +50,7 @@ impl FileModel {
     /// copy constructor
     pub fn copy_from(model: FileModel) -> FileModel {
         FileModel {
+            key: model.key.clone(),
             path: model.path.clone(),
             hash: model.hash.clone(),
             len: model.len,
@@ -134,19 +139,12 @@ impl FileModel {
             files.len(),
             saved.len()
         );
-        fn create_key(model: &FileModel) -> String {
-            let key = model
-                .path
-                .to_str()
-                .expect("file path should be a value string");
-            key.to_string()
-        }
 
         let mut hmap: HashMap<String, FileModel> =
-            files.into_iter().map(|v| (create_key(&v), v)).collect();
+            files.into_iter().map(|v| (v.key.to_string(), v)).collect();
 
         for model in saved {
-            let key = create_key(&model);
+            let key = model.key.clone();
             hmap.insert(key, model);
         }
 
@@ -162,8 +160,12 @@ mod tests {
     fn merge_updates() {
         let filename = "tests/data/files.json";
         let ref_list = FileModel::read_dbfile(filename).expect("a vector of file models");
+        assert_eq!(ref_list.len(), 5);
         let filename = "tests/data/saved.json";
         let saved = FileModel::read_dbfile(filename).expect("a vector of file models");
+        assert_eq!(saved.len(), 3);
+
+        println!("{:?}", saved);
 
         let list = FileModel::merge_updates(ref_list.clone(), saved);
         assert_eq!(ref_list.len(), list.len());

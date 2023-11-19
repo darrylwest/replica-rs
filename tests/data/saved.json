@@ -1,5 +1,6 @@
 [
   {
+    "key": "4LWn7mr28UxySwNG",
     "path": "./tests/file1.txt",
     "hash": "",
     "len": 186,
@@ -7,10 +8,20 @@
     "last_saved": "2023-11-19T15:19:53.423437223"
   },
   {
+    "key": "IzEy7mr29Z6FCePS",
     "path": "./tests/file2.txt",
     "hash": "",
     "len": 19,
     "modified": 1700331937339576,
     "last_saved": "2023-11-19T15:19:53.423437223"
+  },
+  {
+      "key": "8iwl7mr2DU3XnMkT",
+      "path": "./tests/file4.txt",
+      "hash": "",
+      "len": 18,
+      "modified": 1700331937339576,
+      "last_saved": "2023-11-19T15:19:53.423437223"
   }
+      
 ]
