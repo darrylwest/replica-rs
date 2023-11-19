@@ -5,7 +5,7 @@
 use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
 use hashbrown::HashMap;
-use log::{info, warn, error};
+use log::{error, info, warn};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -112,7 +112,7 @@ impl FileModel {
                 let msg = format!("dbfile write error: {}, {}", filename, e);
                 error!("{}", msg);
                 return Err(anyhow!("{}", msg));
-            },
+            }
         }
 
         Ok(())
@@ -128,26 +128,30 @@ impl FileModel {
     }
 
     /// update the reference files with saved list
-    pub fn merge_updates(files: Vec<FileModel>, saved: Vec<FileModel>) {
-        info!("update the reference files");
+    pub fn merge_updates(files: Vec<FileModel>, saved: Vec<FileModel>) -> Vec<FileModel> {
+        info!(
+            "update the reference with saved files, ref: {}, saved: {}",
+            files.len(),
+            saved.len()
+        );
         fn create_key(model: &FileModel) -> String {
-            let key = model.path.to_str().expect("file path should be a value string");
+            let key = model
+                .path
+                .to_str()
+                .expect("file path should be a value string");
             key.to_string()
         }
 
-        let mut hmap: HashMap<String, FileModel> = files.into_iter().map(|v| (create_key(&v), v)).collect();
+        let mut hmap: HashMap<String, FileModel> =
+            files.into_iter().map(|v| (create_key(&v), v)).collect();
 
         for model in saved {
             let key = create_key(&model);
             hmap.insert(key, model);
         }
 
-        println!("{:?}", hmap);
-
-
-        // map.values().into_iter().map(|_k, v) | v).collect()
+        hmap.into_values().collect()
     }
-
 }
 
 #[cfg(test)]
@@ -159,10 +163,10 @@ mod tests {
         let filename = "tests/data/files.json";
         let ref_list = FileModel::read_dbfile(filename).expect("a vector of file models");
         let filename = "tests/data/saved.json";
-        let saved =FileModel::read_dbfile(filename).expect("a vector of file models");
+        let saved = FileModel::read_dbfile(filename).expect("a vector of file models");
 
-        FileModel::merge_updates(ref_list, saved);
-
+        let list = FileModel::merge_updates(ref_list.clone(), saved);
+        assert_eq!(ref_list.len(), list.len());
     }
 
     #[test]
@@ -205,5 +209,4 @@ mod tests {
             "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
         );
     }
-
 }

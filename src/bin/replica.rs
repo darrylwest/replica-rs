@@ -62,9 +62,13 @@ fn run(cli: Cli) -> Result<()> {
         let results = backup.process();
         if results.is_ok() {
             let saved_list = results.unwrap();
-            info!("{} files backed up.", saved_list.len());
+            let count = saved_list.len();
+            info!("{} files backed up.", count);
             // now update the db file records
-            FileModel::merge_updates(files, saved_list);
+            if count > 0 {
+                let dbvec = FileModel::merge_updates(files, saved_list);
+                let _ = FileModel::write_dbfile(&config.dbfile, dbvec);
+            }
         } else {
             error!("{:?}", results);
         }
@@ -76,7 +80,6 @@ fn run(cli: Cli) -> Result<()> {
 
     Ok(())
 }
-
 
 fn main() -> Result<()> {
     let home = env::var("HOME").expect("The user should have a home folder.");
