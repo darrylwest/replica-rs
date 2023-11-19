@@ -58,11 +58,13 @@ fn run(cli: Cli) -> Result<()> {
         }
 
         let target_dir = &config.targets[0];
-        let backup = BackupQueue::new(target_dir.as_str(), files, cli.dryrun);
+        let backup = BackupQueue::new(target_dir.as_str(), files.clone(), cli.dryrun);
         let results = backup.process();
         if results.is_ok() {
-            info!("{} files backed up.", results.unwrap().len());
+            let saved_list = results.unwrap();
+            info!("{} files backed up.", saved_list.len());
             // now update the db file records
+            update_reference_files(files, saved_list);
         } else {
             error!("{:?}", results);
         }
@@ -73,6 +75,11 @@ fn run(cli: Cli) -> Result<()> {
     info!("PROCESS COMPLETE {}", "-".repeat(80));
 
     Ok(())
+}
+
+/// update the reference files with saved list
+fn update_reference_files(_files: Vec<FileModel>, _saved: Vec<FileModel>) {
+    info!("update the reference files");
 }
 
 fn main() -> Result<()> {

@@ -2,9 +2,9 @@
 ///
 /// # file Model
 ///
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
-use log::{info, warn};
+use log::{info, warn, error};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -105,8 +105,14 @@ impl FileModel {
         info!("write model list to file: {}", filename);
         let json = serde_json::to_string_pretty(&list).unwrap();
 
-        let mut buf = File::create(filename)?;
-        buf.write_all(json.as_bytes())?;
+        match File::create(filename) {
+            Ok(mut buf) => buf.write_all(json.as_bytes())?,
+            Err(e) => {
+                let msg = format!("dbfile write error: {}, {}", filename, e);
+                error!("{}", msg);
+                return Err(anyhow!("{}", msg));
+            },
+        }
 
         Ok(())
     }
@@ -136,6 +142,18 @@ mod tests {
             hash,
             "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
         );
+    }
+
+    #[test]
+    fn write_file_bad() {
+        let filename = "tests/data/files.json";
+        let list = FileModel::read_dbfile(filename).expect("a vector of file models");
+
+        assert_eq!(list.len(), 5);
+        let filename = "bad-path/nothere/bad-file-name";
+        let result = FileModel::write_dbfile(filename, list);
+        println!("err: {:?}", result);
+        assert!(result.is_err());
     }
 
     #[test]
