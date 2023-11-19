@@ -94,7 +94,7 @@ impl BackupQueue {
 
     /// copy the source to destination and return the updated model
     pub fn copy_model(&self, src: &Path, dest: FileModel) -> Result<FileModel> {
-        let mut save_model = FileModel::copy_from(dest);
+        let save_model = FileModel::copy_from(dest);
 
         if self.dryrun {
             return Ok(save_model);
@@ -107,10 +107,13 @@ impl BackupQueue {
             return Err(anyhow!("{}", msg));
         }
 
+        let mut model = save_model.read_metadata()?;
         let now = Utc::now().naive_utc();
-        save_model.last_saved = Some(now);
+        model.last_saved = Some(now);
 
-        Ok(save_model)
+        info!("saved: {:?}", model);
+
+        Ok(model)
     }
 
     /// copy from src to dest
@@ -179,6 +182,19 @@ mod tests {
 
         println!("{:?}", response);
         assert!(response.is_ok());
+    }
+
+    #[test]
+    fn bad_copy_model() {
+        let src = Path::new("tests/file-nofile.txt");
+        let dest = FileModel::new("tests/tback/file-nofile.txt");
+        println!("src: {}, dest: {:?}", src.display(), dest);
+
+        let backup = BackupQueue::new("./", vec![], false);
+        let response = backup.copy_model(src, dest);
+
+        println!("{:?}", response);
+        assert!(response.is_err());
     }
 
     #[test]

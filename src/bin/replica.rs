@@ -62,6 +62,7 @@ fn run(cli: Cli) -> Result<()> {
         let results = backup.process();
         if results.is_ok() {
             info!("{} files backed up.", results.unwrap().len());
+            // now update the db file records
         } else {
             error!("{:?}", results);
         }
@@ -87,10 +88,7 @@ mod tests {
 
     #[test]
     fn find_exepath() {
-        let exepath = match env::current_exe() {
-            Ok(exe_path) => exe_path,
-            Err(e) => panic!("failed to get current exe path: {e}"),
-        };
+        let exepath = env::current_exe().expect("should have an exepath");
 
         println!("exe path: {}", exepath.display());
     }
