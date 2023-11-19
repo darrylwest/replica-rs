@@ -1,6 +1,6 @@
 [package]
 name = "replica"
-version = "0.3.7"
+version = "0.3.8"
 edition = "2021"
 authors = ["darryl.west@raincitysoftware.com"]
 rust-version = "1.70"
@@ -31,6 +31,7 @@ openssl = "0.10.43"
 hex = "0.4.3"
 walkdir = "2.3.2"
 subprocess = "0.2.9"
+domain_keys = { git = "https://github.com/darrylwest/domain-keys.git" }
 
 [lints.rust]
 unsafe_code = "forbid"

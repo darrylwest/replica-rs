@@ -58,10 +58,17 @@ fn run(cli: Cli) -> Result<()> {
         }
 
         let target_dir = &config.targets[0];
-        let backup = BackupQueue::new(target_dir.as_str(), files, cli.dryrun);
+        let backup = BackupQueue::new(target_dir.as_str(), files.clone(), cli.dryrun);
         let results = backup.process();
         if results.is_ok() {
-            info!("{} files backed up.", results.unwrap().len());
+            let saved_list = results.unwrap();
+            let count = saved_list.len();
+            info!("{} files backed up.", count);
+            // now update the db file records
+            if count > 0 {
+                let dbvec = FileModel::merge_updates(files, saved_list);
+                let _ = FileModel::write_dbfile(&config.dbfile, dbvec);
+            }
         } else {
             error!("{:?}", results);
         }
@@ -87,10 +94,7 @@ mod tests {
 
     #[test]
     fn find_exepath() {
-        let exepath = match env::current_exe() {
-            Ok(exe_path) => exe_path,
-            Err(e) => panic!("failed to get current exe path: {e}"),
-        };
+        let exepath = env::current_exe().expect("should have an exepath");
 
         println!("exe path: {}", exepath.display());
     }

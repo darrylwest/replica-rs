@@ -1,5 +1,6 @@
 [
   {
+    "key": "4LWn7mr28UxySwNG",
     "path": "./tests/file1.txt",
     "hash": "",
     "len": 186,
@@ -7,6 +8,7 @@
     "last_saved": null
   },
   {
+    "key": "IzEy7mr29Z6FCePS",
     "path": "./tests/file2.txt",
     "hash": "",
     "len": 19,
@@ -14,6 +16,7 @@
     "last_saved": null
   },
   {
+    "key": "Npeu7mr2B2ua25Sn",
     "path": "./tests/big-file.pdf",
     "hash": "",
     "len": 474707,
@@ -21,6 +24,7 @@
     "last_saved": null
   },
   {
+    "key": "0bJk7mr2C8SxJnKA",
     "path": "./tests/.config/file1.txt",
     "hash": "",
     "len": 186,
@@ -28,6 +32,7 @@
     "last_saved": null
   },
   {
+    "key": "8iwl7mr2DU3XnMkT",
     "path": "./tests/.config/file2.txt",
     "hash": "",
     "len": 19,

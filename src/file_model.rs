@@ -2,18 +2,21 @@
 ///
 /// # file Model
 ///
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
-use log::{info, warn};
+use hashbrown::HashMap;
+use log::{error, info, warn};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
+use domain_keys::keys::RouteKey;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileModel {
+    pub key: String,
     pub path: PathBuf,
     pub hash: String,
     pub len: u64,
@@ -24,6 +27,7 @@ pub struct FileModel {
 impl FileModel {
     pub fn new(path: &str) -> FileModel {
         FileModel {
+            key: RouteKey::create(),
             path: PathBuf::from(path),
             hash: "".into(),
             len: 0,
@@ -34,6 +38,7 @@ impl FileModel {
 
     pub fn from(path: PathBuf, len: u64, modified: u64) -> FileModel {
         FileModel {
+            key: RouteKey::create(),
             path,
             hash: "".into(),
             len,
@@ -45,6 +50,7 @@ impl FileModel {
     /// copy constructor
     pub fn copy_from(model: FileModel) -> FileModel {
         FileModel {
+            key: model.key.clone(),
             path: model.path.clone(),
             hash: model.hash.clone(),
             len: model.len,
@@ -105,8 +111,14 @@ impl FileModel {
         info!("write model list to file: {}", filename);
         let json = serde_json::to_string_pretty(&list).unwrap();
 
-        let mut buf = File::create(filename)?;
-        buf.write_all(json.as_bytes())?;
+        match File::create(filename) {
+            Ok(mut buf) => buf.write_all(json.as_bytes())?,
+            Err(e) => {
+                let msg = format!("dbfile write error: {}, {}", filename, e);
+                error!("{}", msg);
+                return Err(anyhow!("{}", msg));
+            }
+        }
 
         Ok(())
     }
@@ -119,6 +131,25 @@ impl FileModel {
         }
         self.path.to_str().unwrap().replace(home.as_str(), "")
     }
+
+    /// update the reference files with saved list
+    pub fn merge_updates(files: Vec<FileModel>, saved: Vec<FileModel>) -> Vec<FileModel> {
+        info!(
+            "update the reference with saved files, ref: {}, saved: {}",
+            files.len(),
+            saved.len()
+        );
+
+        let mut hmap: HashMap<String, FileModel> =
+            files.into_iter().map(|v| (v.key.to_string(), v)).collect();
+
+        for model in saved {
+            let key = model.key.clone();
+            hmap.insert(key, model);
+        }
+
+        hmap.into_values().collect()
+    }
 }
 
 #[cfg(test)]
@@ -126,16 +157,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn calc_hash() {
-        let model = FileModel::new("config/config.toml");
-        let content = std::fs::read("tests/big-file.pdf").unwrap();
-        let hash = model.calc_hash(content.as_slice());
+    fn merge_updates() {
+        let filename = "tests/data/files.json";
+        let ref_list = FileModel::read_dbfile(filename).expect("a vector of file models");
+        assert_eq!(ref_list.len(), 5);
+        let filename = "tests/data/saved.json";
+        let saved = FileModel::read_dbfile(filename).expect("a vector of file models");
+        assert_eq!(saved.len(), 3);
 
-        println!("hash: {}", hash);
-        assert_eq!(
-            hash,
-            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
-        );
+        println!("{:?}", saved);
+
+        let list = FileModel::merge_updates(ref_list.clone(), saved);
+        assert_eq!(ref_list.len(), list.len());
+    }
+
+    #[test]
+    fn write_file_bad() {
+        let filename = "tests/data/files.json";
+        let list = FileModel::read_dbfile(filename).expect("a vector of file models");
+
+        assert_eq!(list.len(), 5);
+        let filename = "bad-path/nothere/bad-file-name";
+        let result = FileModel::write_dbfile(filename, list);
+        println!("err: {:?}", result);
+        assert!(result.is_err());
     }
 
     #[test]
@@ -152,5 +197,18 @@ mod tests {
         let list = FileModel::read_dbfile(filename).expect("a vector of file models");
 
         assert_eq!(list.len(), 0);
+    }
+
+    #[test]
+    fn calc_hash() {
+        let model = FileModel::new("config/config.toml");
+        let content = std::fs::read("tests/big-file.pdf").unwrap();
+        let hash = model.calc_hash(content.as_slice());
+
+        println!("hash: {}", hash);
+        assert_eq!(
+            hash,
+            "e23cd91ac0d728eec44d3c20b87accdb75ec7b9e67d35bad7fb8b672e0348d95"
+        );
     }
 }
