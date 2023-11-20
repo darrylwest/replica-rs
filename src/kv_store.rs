@@ -13,6 +13,7 @@ pub struct KvStore {
     dbpath: PathBuf,
     db: HashMap<String, FileModel>,
     index: HashMap<String, String>,
+    dirty_flag: bool,
 }
 
 impl KvStore {
@@ -22,6 +23,7 @@ impl KvStore {
             dbpath,
             db: HashMap::new(),
             index: HashMap::new(),
+            dirty_flag: false,
         };
 
         match client.read_dbfile() {
@@ -62,11 +64,68 @@ impl KvStore {
 
         Ok(())
     }
+
+    /// get the file model or return None if it doesn't exist
+    pub fn get(&self, key: &str) -> Option<&FileModel> {
+        self.db.get(key)
+    }
+
+    /// insert the model into k/v store's db
+    pub fn set(&mut self, model: FileModel) -> Result<()> {
+        self.dirty_flag = true;
+        let key = model.key.to_string();
+        let _ = self.db.insert(key, model);
+
+        Ok(())
+    }
+
+    /// return the size of this database
+    pub fn len(&self) -> usize {
+        self.db.len()
+    }
+
+    /// return true if the data has been updated, else false
+    pub fn is_dirty(&self) -> bool {
+        self.dirty_flag
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn getset_dirty_len() {
+        let filename = "tests/data/files.json";
+        let mut client = KvStore::init(PathBuf::from(filename)).unwrap();
+        assert!(!client.is_dirty());
+        let count: usize = 5;
+        assert_eq!(client.len(), count);
+
+        let result = client.get("bad-key");
+        assert!(result.is_none());
+
+        let result = client.get("8iwl7mr2DU3XnMkT");
+        println!("{:?}", result);
+        assert!(result.is_some());
+        let model = result.unwrap();
+        assert_eq!(model.len, 19);
+        assert!(!client.is_dirty());
+
+        let mut model = model.clone();
+        let myhash = "1234567";
+        model.hash = myhash.to_string();
+        assert_eq!(&model.hash, &myhash);
+
+        let result = client.set(model.clone());
+        assert!(result.is_ok());
+        assert!(client.is_dirty());
+
+        let updated = client.get(&model.key).unwrap();
+        println!("up: {:?}", updated);
+        assert_eq!(updated.hash, myhash);
+        assert_eq!(client.len(), count);
+    }
 
     #[test]
     fn init() {
