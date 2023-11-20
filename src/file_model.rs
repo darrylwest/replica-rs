@@ -4,7 +4,7 @@
 ///
 use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use log::{error, info, warn};
 use openssl::sha;
 use serde::{Deserialize, Serialize};
@@ -14,7 +14,7 @@ use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
 use domain_keys::keys::RouteKey;
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FileModel {
     pub key: String,
     pub path: PathBuf,
@@ -22,6 +22,7 @@ pub struct FileModel {
     pub len: u64,
     pub modified: u64,
     pub last_saved: Option<NaiveDateTime>,
+    pub written_to: HashSet<String>,
 }
 
 impl FileModel {
@@ -33,6 +34,7 @@ impl FileModel {
             len: 0,
             modified: 0,
             last_saved: None,
+            written_to: HashSet::new(),
         }
     }
 
@@ -44,6 +46,7 @@ impl FileModel {
             len,
             modified,
             last_saved: None,
+            written_to: HashSet::new(),
         }
     }
 
@@ -56,6 +59,7 @@ impl FileModel {
             len: model.len,
             modified: model.modified,
             last_saved: model.last_saved,
+            written_to: model.written_to,
         }
     }
 

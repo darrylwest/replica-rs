@@ -77,6 +77,8 @@ impl BackupQueue {
     pub fn match_files(&self, ref_model: &FileModel, target_path: &Path) -> Option<FileModel> {
         let filename = target_path.to_str().unwrap();
         let mut target_model = FileModel::new(filename);
+        // this ensures that the last_updated gets set to the correct record
+        target_model.key = ref_model.key.clone();
 
         if target_path.exists() {
             target_model = target_model.read_metadata().unwrap();
