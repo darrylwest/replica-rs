@@ -4,22 +4,22 @@ use anyhow::{anyhow, Result};
 use hashbrown::HashMap;
 use log::{error, info, warn};
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
 // use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone)]
-pub struct KvStore {
+pub struct KeyValueStore {
     dbpath: PathBuf,
     db: HashMap<String, FileModel>,
     index: HashMap<String, String>,
     dirty_flag: bool,
 }
 
-impl KvStore {
+impl KeyValueStore {
     /// initializes the database ; reads the dbfile, stores in k/v and creates index.
-    pub fn init(dbpath: PathBuf) -> Result<KvStore> {
-        let mut client = KvStore {
+    pub fn init(dbpath: PathBuf) -> Result<KeyValueStore> {
+        let mut client = KeyValueStore {
             dbpath,
             db: HashMap::new(),
             index: HashMap::new(),
@@ -88,6 +88,37 @@ impl KvStore {
     pub fn is_dirty(&self) -> bool {
         self.dirty_flag
     }
+
+    /// find the file model from the path
+    pub fn find(&self, path: &str) -> Option<&FileModel> {
+        let key = self.index.get(path);
+        if key.is_none() {
+            return None;
+        }
+
+        self.db.get(key.unwrap())
+    }
+
+    /// save the kv to file
+    pub fn savedb(&mut self, filename: &str) -> Result<()> {
+        info!("save the k/v models as a list to file: {}", filename);
+        let list: Vec<FileModel> = self.db.clone().into_values().collect();
+        let json = serde_json::to_string_pretty(&list).unwrap();
+
+        match File::create(filename) {
+            Ok(mut buf) => buf.write_all(json.as_bytes())?,
+            Err(e) => {
+                let msg = format!("dbfile write error: {}, {}", filename, e);
+                error!("{}", msg);
+                return Err(anyhow!("{}", msg));
+            }
+        }
+
+        info!("reset the dirty flag to false");
+        self.dirty_flag = false;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -95,9 +126,33 @@ mod tests {
     use super::*;
 
     #[test]
+    fn savedb() {
+        let filename = "tests/data/files.json";
+        let mut client = KeyValueStore::init(PathBuf::from(filename)).unwrap();
+
+        let filename = "tests/data/backup.json";
+        let result = client.savedb(filename);
+        assert!(result.is_ok())
+    }
+
+    #[test]
+    fn find() {
+        let filename = "tests/data/files.json";
+        let client = KeyValueStore::init(PathBuf::from(filename)).unwrap();
+
+        let model = client.find("a/bad/path");
+        assert!(model.is_none());
+
+        let model = client.find("./tests/big-file.pdf");
+        assert!(model.is_some());
+        let model = model.unwrap();
+        assert_eq!(model.key, "Npeu7mr2B2ua25Sn");
+    }
+
+    #[test]
     fn getset_dirty_len() {
         let filename = "tests/data/files.json";
-        let mut client = KvStore::init(PathBuf::from(filename)).unwrap();
+        let mut client = KeyValueStore::init(PathBuf::from(filename)).unwrap();
         assert!(!client.is_dirty());
         let count: usize = 5;
         assert_eq!(client.len(), count);
@@ -130,7 +185,7 @@ mod tests {
     #[test]
     fn init() {
         let filename = "tests/data/files.json";
-        let result = KvStore::init(PathBuf::from(filename));
+        let result = KeyValueStore::init(PathBuf::from(filename));
 
         println!("{:?}", result);
         assert!(result.is_ok());
@@ -138,7 +193,7 @@ mod tests {
 
     #[test]
     fn init_nofile() {
-        let result = KvStore::init(PathBuf::from("tests/notarealfile.json"));
+        let result = KeyValueStore::init(PathBuf::from("tests/notarealfile.json"));
 
         println!("{:?}", result);
         assert!(result.is_ok());
@@ -146,7 +201,7 @@ mod tests {
 
     #[test]
     fn init_bad_data() {
-        let result = KvStore::init(PathBuf::from("tests/file1.txt"));
+        let result = KeyValueStore::init(PathBuf::from("tests/file1.txt"));
 
         println!("{:?}", result);
         assert!(result.is_err());
