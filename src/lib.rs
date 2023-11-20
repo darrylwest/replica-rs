@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 
-pub mod backup_queue;
+pub mod backup_process;
 pub mod config;
 pub mod file_model;
 pub mod file_walker;

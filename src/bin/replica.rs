@@ -4,7 +4,7 @@
 use anyhow::Result;
 use clap::Parser;
 use log::{error, info, warn};
-use replica::backup_queue::BackupQueue;
+use replica::backup_process::BackupProcess;
 use replica::config::Config;
 use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
@@ -58,7 +58,7 @@ fn run(cli: Cli) -> Result<()> {
         }
 
         let target_dir = &config.targets[0];
-        let backup = BackupQueue::new(target_dir.as_str(), files.clone(), cli.dryrun);
+        let backup = BackupProcess::new(target_dir.as_str(), files.clone(), cli.dryrun);
         let results = backup.process();
         if results.is_ok() {
             let saved_list = results.unwrap();

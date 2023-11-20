@@ -1,6 +1,6 @@
 /// Backup Queue to save queued files to targets
 ///
-/// # Backup Queue
+/// # Backup Process
 ///
 /// create with target folder and queue vector; return the list of saved files updated with save date
 ///
@@ -11,14 +11,14 @@ use log::{debug, error, info};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub struct BackupQueue {
+pub struct BackupProcess {
     pub target: PathBuf,
     pub files: Vec<FileModel>,
     pub dryrun: bool,
 }
 
-impl BackupQueue {
-    pub fn new(path: &str, files: Vec<FileModel>, dryrun: bool) -> BackupQueue {
+impl BackupProcess {
+    pub fn new(path: &str, files: Vec<FileModel>, dryrun: bool) -> BackupProcess {
         let mut tp = path.to_string();
         if !tp.ends_with('/') {
             tp.push('/');
@@ -26,7 +26,7 @@ impl BackupQueue {
 
         info!("dryrun = {}", dryrun);
 
-        BackupQueue {
+        BackupProcess {
             target: PathBuf::from(tp),
             files,
             dryrun,
@@ -157,7 +157,7 @@ mod tests {
         let files = create_filelist();
 
         let flen = files.len();
-        let backup = BackupQueue::new(path, files, true);
+        let backup = BackupProcess::new(path, files, true);
         assert_eq!(backup.files.len(), flen);
     }
 
@@ -167,7 +167,7 @@ mod tests {
         let files = create_filelist();
 
         let flen = files.len();
-        let backup = BackupQueue::new(path, files, true);
+        let backup = BackupProcess::new(path, files, true);
         assert_eq!(flen, backup.files.len());
 
         assert!(true);
@@ -179,7 +179,7 @@ mod tests {
         let dest = FileModel::new("tests/tback/file3.txt");
         println!("src: {}, dest: {:?}", src.display(), dest);
 
-        let backup = BackupQueue::new("./", vec![], false);
+        let backup = BackupProcess::new("./", vec![], false);
         let response = backup.copy_model(src, dest);
 
         println!("{:?}", response);
@@ -192,7 +192,7 @@ mod tests {
         let dest = FileModel::new("tests/tback/file-nofile.txt");
         println!("src: {}, dest: {:?}", src.display(), dest);
 
-        let backup = BackupQueue::new("./", vec![], false);
+        let backup = BackupProcess::new("./", vec![], false);
         let response = backup.copy_model(src, dest);
 
         println!("{:?}", response);
@@ -206,7 +206,7 @@ mod tests {
 
         println!("src: {}, dest: {:?}", src.display(), dest.display());
 
-        let backup = BackupQueue::new("./", vec![], false);
+        let backup = BackupProcess::new("./", vec![], false);
         let response = backup.copy(src, dest);
 
         println!("{:?}", response);
@@ -220,7 +220,7 @@ mod tests {
         let dest = Path::new("tests/tback/file2.txt");
         println!("src: {:?}, dest: {}", src, dest.display());
 
-        let backup = BackupQueue::new("./", vec![], true);
+        let backup = BackupProcess::new("./", vec![], true);
         let response = backup.match_files(&src, dest);
 
         println!("{:?}", response);
@@ -234,7 +234,7 @@ mod tests {
         let dest = Path::new("tests/tback/file1.txt");
         println!("src: {:?}, dest: {}", src, dest.display());
 
-        let backup = BackupQueue::new("./", vec![], true);
+        let backup = BackupProcess::new("./", vec![], true);
         let response = backup.match_files(&src, dest);
 
         println!("{:?}", response);

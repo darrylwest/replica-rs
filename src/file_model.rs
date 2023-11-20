@@ -4,6 +4,7 @@
 ///
 use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
+use domain_keys::keys::RouteKey;
 use hashbrown::{HashMap, HashSet};
 use log::{error, info, warn};
 use openssl::sha;
@@ -12,7 +13,6 @@ use std::env;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
-use domain_keys::keys::RouteKey;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct FileModel {
