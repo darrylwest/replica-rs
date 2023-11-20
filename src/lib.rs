@@ -4,6 +4,7 @@ pub mod backup_process;
 pub mod config;
 pub mod file_model;
 pub mod file_walker;
+pub mod db_ops;
 
 /// The current version as read from the cargo toml file
 ///

@@ -34,7 +34,7 @@ fn cd_app_home(app_home: &str) {
     env::set_current_dir(app_home).unwrap_or_else(|_| panic!("{}", msg));
 }
 
-/// TODO: refactor this to multiple methods
+/// the primary process
 fn run(cli: Cli) -> Result<()> {
     let start_time = Instant::now();
     let config = Config::read_config(cli.config.as_str())?;
@@ -48,14 +48,11 @@ fn run(cli: Cli) -> Result<()> {
         warn!("THIS IS A DRY RUN!");
     }
 
+    // read the current database DbOps
+
     let walker = FileWalker::new(config.clone());
     if let Ok(files) = walker.walk_files_and_folders() {
         info!("file count: {}", files.len());
-        // now compare and update if necessary
-        match FileModel::write_dbfile(&config.dbfile, files.clone()) {
-            Ok(()) => info!("file model list written to {}", config.dbfile),
-            Err(e) => error!("error: {}, writing file model list to {}", e, config.dbfile),
-        }
 
         let target_dir = &config.targets[0];
         let backup = BackupProcess::new(target_dir.as_str(), files.clone(), cli.dryrun);
