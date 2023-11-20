@@ -1,4 +1,4 @@
-/// DbOps - database operations
+/// Key/Value Store - database operations
 
 use anyhow::{anyhow, Result};
 use hashbrown::HashMap;
@@ -10,16 +10,16 @@ use std::io::{BufReader, Read};
 // use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone)]
-pub struct DbOps {
+pub struct KvStore {
     dbpath: PathBuf,
     db: HashMap<String, FileModel>,
     index: HashMap<String, String>,
 }
 
-impl DbOps {
+impl KvStore {
     /// initializes the database ; reads the dbfile, stores in k/v and creates index.
-    pub fn init(dbpath: PathBuf) -> Result<DbOps> {
-        let mut client = DbOps {
+    pub fn init(dbpath: PathBuf) -> Result<KvStore> {
+        let mut client = KvStore {
             dbpath,
             db: HashMap::new(),
             index: HashMap::new(),
@@ -74,8 +74,25 @@ mod tests {
     #[test]
     fn init() {
         let filename = "tests/data/files.json";
-        let result = DbOps::init(PathBuf::from(filename));
+        let result = KvStore::init(PathBuf::from(filename));
 
         println!("{:?}", result);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn init_nofile() {
+        let result = KvStore::init(PathBuf::from("tests/notarealfile.json"));
+
+        println!("{:?}", result);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn init_bad_data() {
+        let result = KvStore::init(PathBuf::from("tests/file1.txt"));
+
+        println!("{:?}", result);
+        assert!(result.is_err());
     }
 }
