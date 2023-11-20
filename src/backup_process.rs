@@ -67,7 +67,7 @@ impl BackupProcess {
 
         let target_model = target_model.unwrap();
 
-        match self.copy_model(model.path.as_path(), target_model) {
+        match self.copy_model(model, target_model) {
             Ok(model) => Some(model),
             Err(_e) => None,
         }
@@ -94,24 +94,29 @@ impl BackupProcess {
         Some(target_model)
     }
 
-    /// copy the source to destination and return the updated model
-    pub fn copy_model(&self, src: &Path, dest: FileModel) -> Result<FileModel> {
+    /// Copy the source to destination; update the source last_saved date and written to hash;
+    /// Return the updated src model
+    pub fn copy_model(&self, src: &FileModel, dest: FileModel) -> Result<FileModel> {
         let save_model = FileModel::copy_from(dest);
 
         if self.dryrun {
             return Ok(save_model);
         }
 
+        let src_path = src.path.as_path();
         let dest_path = save_model.path.as_path();
-        if self.copy(src, dest_path).is_err() {
+        if self.copy(src_path, dest_path).is_err() {
             let msg = format!("error saving to: {}", dest_path.display());
             error!("{}", msg);
             return Err(anyhow!("{}", msg));
         }
 
-        let mut model = save_model.read_metadata()?;
+        let mut model = FileModel::copy_from(src.to_owned());
         let now = Utc::now().naive_utc();
+        let write_path = dest_path.to_str().unwrap();
+
         model.last_saved = Some(now);
+        model.written_to.insert(write_path.to_string());
 
         info!("saved: {:?}", model);
 
@@ -175,12 +180,12 @@ mod tests {
 
     #[test]
     fn copy_model() {
-        let src = Path::new("tests/file3.txt");
+        let src = FileModel::new("tests/file3.txt");
         let dest = FileModel::new("tests/tback/file3.txt");
-        println!("src: {}, dest: {:?}", src.display(), dest);
+        println!("src: {:?}, dest: {:?}", src, dest);
 
         let backup = BackupProcess::new("./", vec![], false);
-        let response = backup.copy_model(src, dest);
+        let response = backup.copy_model(&src, dest);
 
         println!("{:?}", response);
         assert!(response.is_ok());
@@ -188,12 +193,12 @@ mod tests {
 
     #[test]
     fn bad_copy_model() {
-        let src = Path::new("tests/file-nofile.txt");
+        let src = FileModel::new("tests/file-nofile.txt");
         let dest = FileModel::new("tests/tback/file-nofile.txt");
-        println!("src: {}, dest: {:?}", src.display(), dest);
+        println!("src: {:?}, dest: {:?}", src, dest);
 
         let backup = BackupProcess::new("./", vec![], false);
-        let response = backup.copy_model(src, dest);
+        let response = backup.copy_model(&src, dest);
 
         println!("{:?}", response);
         assert!(response.is_err());
