@@ -1,12 +1,11 @@
+use crate::file_model::FileModel;
 /// Key/Value Store - database operations
-
 use anyhow::{anyhow, Result};
 use hashbrown::HashMap;
-use std::path::PathBuf;
-use crate::file_model::FileModel;
-use log::{info, warn, error};
+use log::{error, info, warn};
 use std::fs::File;
 use std::io::{BufReader, Read};
+use std::path::PathBuf;
 // use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone)]
@@ -37,7 +36,7 @@ impl KvStore {
 
     fn read_dbfile(&mut self) -> Result<()> {
         info!("read database file from {}", self.dbpath.display());
-        
+
         let file = match File::open(self.dbpath.as_os_str()) {
             Ok(file) => file,
             Err(e) => {
@@ -61,10 +60,8 @@ impl KvStore {
             self.index.insert(mpath.to_string(), key);
         }
 
-
         Ok(())
     }
-
 }
 
 #[cfg(test)]
