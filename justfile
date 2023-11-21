@@ -15,12 +15,19 @@ test:
     clear
     /bin/rm -fr tests/tback-tmp tback
     cargo test
+    just restore
+
 
 # run the standard tests + clippy and fmt
 test-all:
     clear
     /bin/rm -fr tests/tback-tmp tback
     cargo test -- --include-ignored && just format
+    just restore
+
+# restore the test files so they 
+restore:
+    git checkout .test-replica/data/run2-file.json tests/changed-file.txt
 
 # clean the project
 clean:
@@ -57,6 +64,7 @@ watch:
 cover:
     /bin/rm -fr tests/tback-tmp tback
     cargo tarpaulin --out html --output-dir coverage && mv coverage/tarpaulin-report.html coverage/index.html
+    just restore
 
 # start a http server in the coverage folder
 serve-cover:
