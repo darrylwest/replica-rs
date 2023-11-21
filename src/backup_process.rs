@@ -5,6 +5,7 @@
 /// create with target folder and queue vector; return the list of saved files updated with save date
 ///
 use crate::file_model::FileModel;
+use crate::kv_store::KeyValueStore;
 use anyhow::{anyhow, Result};
 use chrono::Utc;
 use log::{debug, error, info};
@@ -34,24 +35,29 @@ impl BackupProcess {
     }
 
     /// process the file list; return the list of files that were backup
-    pub fn process(&self) -> Result<Vec<FileModel>> {
+    pub fn process(&self, mut db: KeyValueStore) -> Result<()> {
         info!("process the backup queue");
-        let mut saved: Vec<FileModel> = Vec::new();
 
         let files = self.files.clone();
         for file_model in files {
             let fpath = file_model.path.as_os_str();
             match self.check_and_copy_file(&file_model) {
-                Some(backup_model) => {
-                    info!("backup: {:?} -> {}", fpath, backup_model.path.display());
+                Some(saved_model) => {
+                    info!("file backup: {:?} -> {}", fpath, saved_model.path.display());
 
-                    saved.push(backup_model);
+                    // save to db
+                    let resp = db.set(saved_model.clone());
+                    if resp.is_err() {
+                        error!("could not save to database: {:?}", resp);
+                    } else {
+                        info!("saved to db: {:?}", saved_model);
+                    }
                 }
                 None => debug!("skip {:?}", fpath),
             }
         }
 
-        Ok(saved)
+        Ok(())
     }
 
     /// create the target path; check stat to see backup is required
@@ -108,19 +114,18 @@ impl BackupProcess {
         if self.copy(src_path, dest_path).is_err() {
             let msg = format!("error saving to: {}", dest_path.display());
             error!("{}", msg);
-            return Err(anyhow!("{}", msg));
+            Err(anyhow!("{}", msg))
+        } else {
+            let now = Utc::now().naive_utc();
+            let write_path = dest_path.to_str().unwrap();
+
+            let mut model = src.clone();
+
+            model.last_saved = Some(now);
+            model.written_to.insert(write_path.to_string());
+
+            Ok(model)
         }
-
-        let mut model = FileModel::copy_from(src.to_owned());
-        let now = Utc::now().naive_utc();
-        let write_path = dest_path.to_str().unwrap();
-
-        model.last_saved = Some(now);
-        model.written_to.insert(write_path.to_string());
-
-        info!("saved: {:?}", model);
-
-        Ok(model)
     }
 
     /// copy from src to dest

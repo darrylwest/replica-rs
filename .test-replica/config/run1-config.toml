@@ -10,6 +10,6 @@ files = [
     "tests/big-file.pdf",
     "tests/changed-file.txt",
 ]
-dbfile = ".test-replica/data/run2-file.json"
+dbfile = ".test-replica/data/run1-file.json"
 compress = false
 encrypt = false

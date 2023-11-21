@@ -1,0 +1,47 @@
+[
+  {
+    "key": "gfl27msaerQYZ1Vy",
+    "path": "tback/./tests/.config/file1.txt",
+    "hash": "",
+    "len": 0,
+    "modified": 0,
+    "last_saved": null,
+    "written_to": []
+  },
+  {
+    "key": "9x2h7msaerQZU733",
+    "path": "tback/./tests/.config/file2.txt",
+    "hash": "",
+    "len": 0,
+    "modified": 0,
+    "last_saved": null,
+    "written_to": []
+  },
+  {
+    "key": "p4qg7msaerQPepHa",
+    "path": "tback/./tests/big-file.pdf",
+    "hash": "",
+    "len": 0,
+    "modified": 0,
+    "last_saved": null,
+    "written_to": []
+  },
+  {
+    "key": "XuZ57msaerQLJtwC",
+    "path": "tback/./tests/file1.txt",
+    "hash": "",
+    "len": 0,
+    "modified": 0,
+    "last_saved": null,
+    "written_to": []
+  },
+  {
+    "key": "sSzd7msaerQPXcfy",
+    "path": "tback/./tests/file2.txt",
+    "hash": "",
+    "len": 0,
+    "modified": 0,
+    "last_saved": null,
+    "written_to": []
+  }
+]

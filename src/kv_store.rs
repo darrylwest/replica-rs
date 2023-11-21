@@ -80,7 +80,7 @@ impl KeyValueStore {
     }
 
     /// return the size of this database
-    pub fn len(&self) -> usize {
+    pub fn dbsize(&self) -> usize {
         self.db.len()
     }
 
@@ -92,9 +92,7 @@ impl KeyValueStore {
     /// find the file model from the path
     pub fn find(&self, path: &str) -> Option<&FileModel> {
         let key = self.index.get(path);
-        if key.is_none() {
-            return None;
-        }
+        key?;
 
         self.db.get(key.unwrap())
     }
@@ -126,6 +124,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn savedb_bad() {
+        let filename = "tests/data/files.json";
+        let mut client = KeyValueStore::init(PathBuf::from(filename)).unwrap();
+
+        let filename = "tests/no-data/bad/backup.json";
+        let result = client.savedb(filename);
+        assert!(result.is_err())
+    }
+
+    #[test]
     fn savedb() {
         let filename = "tests/data/files.json";
         let mut client = KeyValueStore::init(PathBuf::from(filename)).unwrap();
@@ -150,12 +158,12 @@ mod tests {
     }
 
     #[test]
-    fn getset_dirty_len() {
+    fn getset_dirty_dbsize() {
         let filename = "tests/data/files.json";
         let mut client = KeyValueStore::init(PathBuf::from(filename)).unwrap();
         assert!(!client.is_dirty());
         let count: usize = 5;
-        assert_eq!(client.len(), count);
+        assert_eq!(client.dbsize(), count);
 
         let result = client.get("bad-key");
         assert!(result.is_none());
@@ -179,7 +187,7 @@ mod tests {
         let updated = client.get(&model.key).unwrap();
         println!("up: {:?}", updated);
         assert_eq!(updated.hash, myhash);
-        assert_eq!(client.len(), count);
+        assert_eq!(client.dbsize(), count);
     }
 
     #[test]

@@ -5,13 +5,11 @@
 use anyhow::{anyhow, Result};
 use chrono::naive::NaiveDateTime;
 use domain_keys::keys::RouteKey;
-use hashbrown::{HashMap, HashSet};
-use log::{error, info, warn};
+use hashbrown::HashSet;
+use log::error;
 use openssl::sha;
 use serde::{Deserialize, Serialize};
 use std::env;
-use std::fs::File;
-use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -66,7 +64,14 @@ impl FileModel {
     /// read the file based metadata, len, modified, etc
     pub fn read_metadata(&self) -> Result<FileModel> {
         let mut model = self.clone();
-        let meta = self.path.metadata()?;
+        let resp = self.path.metadata();
+        if resp.is_err() {
+            let msg = format!("failed to get meta data: {:?}", resp);
+            error!("{}", msg);
+            return Err(anyhow!("{}", msg));
+        }
+
+        let meta = resp.unwrap();
         model.len = meta.len();
 
         let modified = meta.modified().unwrap();
@@ -87,46 +92,6 @@ impl FileModel {
         hex::encode(hash)
     }
 
-    /// read the db file
-    pub fn read_dbfile(filename: &str) -> Result<Vec<FileModel>> {
-        // check to see if the file exists...
-        info!("read db model list: {}", filename);
-        let file = match File::open(filename) {
-            Ok(file) => file,
-            Err(e) => {
-                warn!("creating a new empty list: {}", e);
-                let list: Vec<FileModel> = Vec::new();
-                return Ok(list);
-            }
-        };
-
-        let mut reader = BufReader::new(file);
-
-        let mut text = String::new();
-        reader.read_to_string(&mut text)?;
-
-        let list: Vec<FileModel> = serde_json::from_str(&text)?;
-
-        Ok(list)
-    }
-
-    /// save the list of file models to disk
-    pub fn write_dbfile(filename: &str, list: Vec<FileModel>) -> Result<()> {
-        info!("write model list to file: {}", filename);
-        let json = serde_json::to_string_pretty(&list).unwrap();
-
-        match File::create(filename) {
-            Ok(mut buf) => buf.write_all(json.as_bytes())?,
-            Err(e) => {
-                let msg = format!("dbfile write error: {}, {}", filename, e);
-                error!("{}", msg);
-                return Err(anyhow!("{}", msg));
-            }
-        }
-
-        Ok(())
-    }
-
     /// strip off the home parts to return the relative path
     pub fn relative_path(&self) -> String {
         let mut home = env::var("HOME").expect("The user should have a home folder.");
@@ -135,73 +100,11 @@ impl FileModel {
         }
         self.path.to_str().unwrap().replace(home.as_str(), "")
     }
-
-    /// update the reference files with saved list
-    pub fn merge_updates(files: Vec<FileModel>, saved: Vec<FileModel>) -> Vec<FileModel> {
-        info!(
-            "update the reference with saved files, ref: {}, saved: {}",
-            files.len(),
-            saved.len()
-        );
-
-        let mut hmap: HashMap<String, FileModel> =
-            files.into_iter().map(|v| (v.key.to_string(), v)).collect();
-
-        for model in saved {
-            let key = model.key.clone();
-            hmap.insert(key, model);
-        }
-
-        hmap.into_values().collect()
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn merge_updates() {
-        let filename = "tests/data/files.json";
-        let ref_list = FileModel::read_dbfile(filename).expect("a vector of file models");
-        assert_eq!(ref_list.len(), 5);
-        let filename = "tests/data/saved.json";
-        let saved = FileModel::read_dbfile(filename).expect("a vector of file models");
-        assert_eq!(saved.len(), 3);
-
-        println!("{:?}", saved);
-
-        let list = FileModel::merge_updates(ref_list.clone(), saved);
-        assert_eq!(ref_list.len(), list.len());
-    }
-
-    #[test]
-    fn write_file_bad() {
-        let filename = "tests/data/files.json";
-        let list = FileModel::read_dbfile(filename).expect("a vector of file models");
-
-        assert_eq!(list.len(), 5);
-        let filename = "bad-path/nothere/bad-file-name";
-        let result = FileModel::write_dbfile(filename, list);
-        println!("err: {:?}", result);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn read_dbfile() {
-        let filename = "tests/data/files.json";
-        let list = FileModel::read_dbfile(filename).expect("a vector of file models");
-
-        assert_eq!(list.len(), 5);
-    }
-
-    #[test]
-    fn read_dbfile_bad() {
-        let filename = ".test-replica/data/no-files.json";
-        let list = FileModel::read_dbfile(filename).expect("a vector of file models");
-
-        assert_eq!(list.len(), 0);
-    }
 
     #[test]
     fn calc_hash() {
