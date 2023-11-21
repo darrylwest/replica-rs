@@ -66,13 +66,14 @@ fn run(cli: Cli, config: Config) -> Result<()> {
         let results = backup.process(db.clone());
         if results.is_err() {
             error!("backup failed: {:?}", results);
-        }
-    }
-
-    if db.is_dirty() {
-        let resp = db.savedb(config.dbfile.as_str());
-        if resp.is_err() {
-            error!("database save failed: {:?}", resp);
+        } else {
+            db = results.unwrap();
+            if db.is_dirty() {
+                let resp = db.savedb(config.dbfile.as_str());
+                if resp.is_err() {
+                    error!("database save failed: {:?}", resp);
+                }
+            }
         }
     }
 

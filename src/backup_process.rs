@@ -35,7 +35,7 @@ impl BackupProcess {
     }
 
     /// process the file list; return the list of files that were backup
-    pub fn process(&self, mut db: KeyValueStore) -> Result<()> {
+    pub fn process(&self, mut db: KeyValueStore) -> Result<KeyValueStore> {
         info!("process the backup queue");
 
         let files = self.files.clone();
@@ -57,7 +57,7 @@ impl BackupProcess {
             }
         }
 
-        Ok(())
+        Ok(db)
     }
 
     /// create the target path; check stat to see backup is required
