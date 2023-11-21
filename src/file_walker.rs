@@ -100,7 +100,7 @@ impl FileWalker {
 
         for ex in excludes.iter() {
             if name.contains(ex.as_str()) {
-                info!("exclude: {} {}", name, ex);
+                debug!("exclude: {} {}", name, ex);
                 return true;
             }
         }
