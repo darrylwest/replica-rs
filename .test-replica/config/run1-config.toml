@@ -10,6 +10,7 @@ files = [
     "tests/big-file.pdf",
     "tests/changed-file.txt",
 ]
+excludes = []
 dbfile = ".test-replica/data/run1-file.json"
 compress = false
 encrypt = false
