@@ -9,7 +9,12 @@ files = [
     "tests/file2.txt",
     "tests/big-file.pdf",
 ]
-excludes = []
+excludes = [
+    ".config/broot",
+    ".config/chromium",
+    ".config/configstore",
+    ".config/dconf",
+]
 dbfile = ".replica/data/files.json"
 compress = false
 encrypt = false

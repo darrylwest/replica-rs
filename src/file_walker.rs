@@ -115,16 +115,9 @@ mod tests {
 
     #[test]
     fn excludes() {
-        let excludes = vec![
-            ".config/broot".to_string(),
-            ".config/chromium".to_string(),
-            ".config/configstore".to_string(),
-            ".config/dconf".to_string(),
-        ];
+        // [ ".config/broot", ".config/chromium", ".config/configstore", ".config/dconf" ]
 
-        let mut config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
-        config.source_folders = vec![String::from("/home/dpw/.config")];
-        config.excludes = excludes.to_owned();
+        let config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
         let walker = FileWalker::new(config.clone());
 
         let path = Path::new("/home/dpw/.config/chromium/thing");
