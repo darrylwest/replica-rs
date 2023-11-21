@@ -4,11 +4,12 @@
 use anyhow::Result;
 use clap::Parser;
 use log::{error, info, warn};
-use replica::backup_queue::BackupQueue;
+use replica::backup_process::BackupProcess;
 use replica::config::Config;
-use replica::file_model::FileModel;
 use replica::file_walker::FileWalker;
+use replica::kv_store::KeyValueStore;
 use std::env;
+use std::path::PathBuf;
 use std::time::Instant;
 
 #[derive(Clone, Debug, Default, Parser)]
@@ -34,43 +35,45 @@ fn cd_app_home(app_home: &str) {
     env::set_current_dir(app_home).unwrap_or_else(|_| panic!("{}", msg));
 }
 
-/// TODO: refactor this to multiple methods
-fn run(cli: Cli) -> Result<()> {
-    let start_time = Instant::now();
-    let config = Config::read_config(cli.config.as_str())?;
-
-    config.start_logger()?;
+fn startup(cli: &Cli) -> Config {
+    let config = Config::read_config(cli.config.as_str()).expect("config should initialize");
+    config.start_logger().expect("logger should start.");
 
     info!("replica config: {:?}", config);
+
+    config.to_owned()
+}
+
+/// the primary process
+fn run(cli: Cli, config: Config) -> Result<()> {
+    let start_time = Instant::now();
+
     cd_app_home(config.home.as_str());
 
     if cli.dryrun {
         warn!("THIS IS A DRY RUN!");
     }
 
+    // read the current database DbOps
+    let mut db = KeyValueStore::init(PathBuf::from(config.dbfile.clone()))?;
+
     let walker = FileWalker::new(config.clone());
     if let Ok(files) = walker.walk_files_and_folders() {
         info!("file count: {}", files.len());
-        // now compare and update if necessary
-        match FileModel::write_dbfile(&config.dbfile, files.clone()) {
-            Ok(()) => info!("file model list written to {}", config.dbfile),
-            Err(e) => error!("error: {}, writing file model list to {}", e, config.dbfile),
-        }
 
         let target_dir = &config.targets[0];
-        let backup = BackupQueue::new(target_dir.as_str(), files.clone(), cli.dryrun);
-        let results = backup.process();
-        if results.is_ok() {
-            let saved_list = results.unwrap();
-            let count = saved_list.len();
-            info!("{} files backed up.", count);
-            // now update the db file records
-            if count > 0 {
-                let dbvec = FileModel::merge_updates(files, saved_list);
-                let _ = FileModel::write_dbfile(&config.dbfile, dbvec);
-            }
+        let backup = BackupProcess::new(target_dir.as_str(), files.clone(), cli.dryrun);
+        let results = backup.process(db.clone());
+        if results.is_err() {
+            error!("backup failed: {:?}", results);
         } else {
-            error!("{:?}", results);
+            db = results.unwrap();
+            if db.is_dirty() {
+                let resp = db.savedb(config.dbfile.as_str());
+                if resp.is_err() {
+                    error!("database save failed: {:?}", resp);
+                }
+            }
         }
     }
 
@@ -85,27 +88,73 @@ fn main() -> Result<()> {
     let home = env::var("HOME").expect("The user should have a home folder.");
     cd_app_home(home.as_str());
 
-    run(Cli::parse())
+    let cli = Cli::parse();
+    let config = startup(&cli);
+    run(cli, config)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{fs::File, io::Write};
 
-    #[test]
-    fn find_exepath() {
-        let exepath = env::current_exe().expect("should have an exepath");
-
-        println!("exe path: {}", exepath.display());
+    fn change_file() {
+        let filename = "tests/changed-file.txt";
+        let mut buf = File::create(filename).unwrap();
+        let msg = format!("the time: {:?}", Instant::now());
+        buf.write_all(msg.as_bytes()).unwrap();
     }
 
     #[test]
-    fn run_test() {
+    fn startup_test() {
         let test_home = env::current_dir().expect("should get the current working directory");
         let conf_path = format!(
             "{}/.test-replica/config/run-config.toml",
             test_home.to_str().unwrap()
         );
+
+        let cli = Cli {
+            config: conf_path,
+            verbose: false,
+            dryrun: false,
+        };
+
+        let config = startup(&cli);
+        println!("cli: {:?}", cli);
+        println!("ctx: {:?}", config);
+
+        assert!(true);
+    }
+
+    #[test]
+    fn run_test() {
+        change_file();
+        let test_home = env::current_dir().expect("should get the current working directory");
+        let conf_path = format!(
+            "{}/.test-replica/config/run-config.toml",
+            test_home.to_str().unwrap()
+        );
+        let config = Config::read_config(conf_path.as_str()).unwrap();
+
+        println!("conf path : {:?}", conf_path);
+        let cli = Cli {
+            config: conf_path,
+            verbose: false,
+            dryrun: false,
+        };
+        println!("{:?}", cli);
+        let results = run(cli, config);
+        assert!(results.is_ok());
+    }
+
+    #[test]
+    fn run_test_dryrun() {
+        let test_home = env::current_dir().expect("should get the current working directory");
+        let conf_path = format!(
+            "{}/.test-replica/config/run-config.toml",
+            test_home.to_str().unwrap()
+        );
+        let config = Config::read_config(conf_path.as_str()).unwrap();
         println!("conf path : {:?}", conf_path);
         let cli = Cli {
             config: conf_path,
@@ -113,7 +162,8 @@ mod tests {
             dryrun: true,
         };
         println!("{:?}", cli);
-        let results = run(cli);
+        let results = run(cli, config);
+        println!("{:?}", results);
         assert!(results.is_ok());
     }
 
@@ -122,5 +172,12 @@ mod tests {
         let test_home = env::current_dir().expect("should get the current working directory");
         println!("{}", test_home.display());
         cd_app_home(test_home.to_str().unwrap());
+    }
+
+    #[test]
+    fn find_exepath() {
+        let exepath = env::current_exe().expect("should have an exepath");
+
+        println!("exe path: {}", exepath.display());
     }
 }

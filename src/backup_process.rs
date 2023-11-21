@@ -1,24 +1,25 @@
 /// Backup Queue to save queued files to targets
 ///
-/// # Backup Queue
+/// # Backup Process
 ///
 /// create with target folder and queue vector; return the list of saved files updated with save date
 ///
 use crate::file_model::FileModel;
+use crate::kv_store::KeyValueStore;
 use anyhow::{anyhow, Result};
 use chrono::Utc;
 use log::{debug, error, info};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub struct BackupQueue {
+pub struct BackupProcess {
     pub target: PathBuf,
     pub files: Vec<FileModel>,
     pub dryrun: bool,
 }
 
-impl BackupQueue {
-    pub fn new(path: &str, files: Vec<FileModel>, dryrun: bool) -> BackupQueue {
+impl BackupProcess {
+    pub fn new(path: &str, files: Vec<FileModel>, dryrun: bool) -> BackupProcess {
         let mut tp = path.to_string();
         if !tp.ends_with('/') {
             tp.push('/');
@@ -26,7 +27,7 @@ impl BackupQueue {
 
         info!("dryrun = {}", dryrun);
 
-        BackupQueue {
+        BackupProcess {
             target: PathBuf::from(tp),
             files,
             dryrun,
@@ -34,24 +35,29 @@ impl BackupQueue {
     }
 
     /// process the file list; return the list of files that were backup
-    pub fn process(&self) -> Result<Vec<FileModel>> {
+    pub fn process(&self, mut db: KeyValueStore) -> Result<KeyValueStore> {
         info!("process the backup queue");
-        let mut saved: Vec<FileModel> = Vec::new();
 
         let files = self.files.clone();
         for file_model in files {
             let fpath = file_model.path.as_os_str();
             match self.check_and_copy_file(&file_model) {
-                Some(backup_model) => {
-                    info!("backup: {:?} -> {}", fpath, backup_model.path.display());
+                Some(saved_model) => {
+                    info!("file backup: {:?} -> {}", fpath, saved_model.path.display());
 
-                    saved.push(backup_model);
+                    // save to db
+                    let resp = db.set(saved_model.clone());
+                    if resp.is_err() {
+                        error!("could not save to database: {:?}", resp);
+                    } else {
+                        info!("saved to db: {:?}", saved_model);
+                    }
                 }
                 None => debug!("skip {:?}", fpath),
             }
         }
 
-        Ok(saved)
+        Ok(db)
     }
 
     /// create the target path; check stat to see backup is required
@@ -67,7 +73,7 @@ impl BackupQueue {
 
         let target_model = target_model.unwrap();
 
-        match self.copy_model(model.path.as_path(), target_model) {
+        match self.copy_model(model, target_model) {
             Ok(model) => Some(model),
             Err(_e) => None,
         }
@@ -77,6 +83,8 @@ impl BackupQueue {
     pub fn match_files(&self, ref_model: &FileModel, target_path: &Path) -> Option<FileModel> {
         let filename = target_path.to_str().unwrap();
         let mut target_model = FileModel::new(filename);
+        // this ensures that the last_updated gets set to the correct record
+        target_model.key = ref_model.key.clone();
 
         if target_path.exists() {
             target_model = target_model.read_metadata().unwrap();
@@ -92,28 +100,32 @@ impl BackupQueue {
         Some(target_model)
     }
 
-    /// copy the source to destination and return the updated model
-    pub fn copy_model(&self, src: &Path, dest: FileModel) -> Result<FileModel> {
+    /// Copy the source to destination; update the source last_saved date and written to hash;
+    /// Return the updated src model
+    pub fn copy_model(&self, src: &FileModel, dest: FileModel) -> Result<FileModel> {
         let save_model = FileModel::copy_from(dest);
 
         if self.dryrun {
             return Ok(save_model);
         }
 
+        let src_path = src.path.as_path();
         let dest_path = save_model.path.as_path();
-        if self.copy(src, dest_path).is_err() {
+        if self.copy(src_path, dest_path).is_err() {
             let msg = format!("error saving to: {}", dest_path.display());
             error!("{}", msg);
-            return Err(anyhow!("{}", msg));
+            Err(anyhow!("{}", msg))
+        } else {
+            let now = Utc::now().naive_utc();
+            let write_path = dest_path.to_str().unwrap();
+
+            let mut model = src.clone();
+
+            model.last_saved = Some(now);
+            model.written_to.insert(write_path.to_string());
+
+            Ok(model)
         }
-
-        let mut model = save_model.read_metadata()?;
-        let now = Utc::now().naive_utc();
-        model.last_saved = Some(now);
-
-        info!("saved: {:?}", model);
-
-        Ok(model)
     }
 
     /// copy from src to dest
@@ -155,7 +167,7 @@ mod tests {
         let files = create_filelist();
 
         let flen = files.len();
-        let backup = BackupQueue::new(path, files, true);
+        let backup = BackupProcess::new(path, files, true);
         assert_eq!(backup.files.len(), flen);
     }
 
@@ -165,7 +177,7 @@ mod tests {
         let files = create_filelist();
 
         let flen = files.len();
-        let backup = BackupQueue::new(path, files, true);
+        let backup = BackupProcess::new(path, files, true);
         assert_eq!(flen, backup.files.len());
 
         assert!(true);
@@ -173,12 +185,12 @@ mod tests {
 
     #[test]
     fn copy_model() {
-        let src = Path::new("tests/file3.txt");
+        let src = FileModel::new("tests/file3.txt");
         let dest = FileModel::new("tests/tback/file3.txt");
-        println!("src: {}, dest: {:?}", src.display(), dest);
+        println!("src: {:?}, dest: {:?}", src, dest);
 
-        let backup = BackupQueue::new("./", vec![], false);
-        let response = backup.copy_model(src, dest);
+        let backup = BackupProcess::new("./", vec![], false);
+        let response = backup.copy_model(&src, dest);
 
         println!("{:?}", response);
         assert!(response.is_ok());
@@ -186,12 +198,12 @@ mod tests {
 
     #[test]
     fn bad_copy_model() {
-        let src = Path::new("tests/file-nofile.txt");
+        let src = FileModel::new("tests/file-nofile.txt");
         let dest = FileModel::new("tests/tback/file-nofile.txt");
-        println!("src: {}, dest: {:?}", src.display(), dest);
+        println!("src: {:?}, dest: {:?}", src, dest);
 
-        let backup = BackupQueue::new("./", vec![], false);
-        let response = backup.copy_model(src, dest);
+        let backup = BackupProcess::new("./", vec![], false);
+        let response = backup.copy_model(&src, dest);
 
         println!("{:?}", response);
         assert!(response.is_err());
@@ -204,7 +216,7 @@ mod tests {
 
         println!("src: {}, dest: {:?}", src.display(), dest.display());
 
-        let backup = BackupQueue::new("./", vec![], false);
+        let backup = BackupProcess::new("./", vec![], false);
         let response = backup.copy(src, dest);
 
         println!("{:?}", response);
@@ -218,7 +230,7 @@ mod tests {
         let dest = Path::new("tests/tback/file2.txt");
         println!("src: {:?}, dest: {}", src, dest.display());
 
-        let backup = BackupQueue::new("./", vec![], true);
+        let backup = BackupProcess::new("./", vec![], true);
         let response = backup.match_files(&src, dest);
 
         println!("{:?}", response);
@@ -232,7 +244,7 @@ mod tests {
         let dest = Path::new("tests/tback/file1.txt");
         println!("src: {:?}, dest: {}", src, dest.display());
 
-        let backup = BackupQueue::new("./", vec![], true);
+        let backup = BackupProcess::new("./", vec![], true);
         let response = backup.match_files(&src, dest);
 
         println!("{:?}", response);
