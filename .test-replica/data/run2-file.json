@@ -44,12 +44,23 @@
     ]
   },
   {
-    "key": "BP3v7msl38fDdFDG",
+    "key": "uA6q7msouXoFbf1H",
+    "path": "./tests/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:01:35.088522377",
+    "written_to": [
+      "tback/./tests/file1.txt"
+    ]
+  },
+  {
+    "key": "H7fh7msouXoFt493",
     "path": "./tests/big-file.pdf",
     "hash": "",
     "len": 474707,
     "modified": 1699990650530503,
-    "last_saved": "2023-11-21T01:02:37.556382986",
+    "last_saved": "2023-11-21T02:01:35.089120465",
     "written_to": [
       "tback/./tests/big-file.pdf"
     ]
@@ -63,6 +74,17 @@
     "last_saved": "2023-11-21T01:01:11.830740480",
     "written_to": [
       "tback/./tests/.config/file1.txt"
+    ]
+  },
+  {
+    "key": "BP3v7msl38fDdFDG",
+    "path": "./tests/big-file.pdf",
+    "hash": "",
+    "len": 474707,
+    "modified": 1699990650530503,
+    "last_saved": "2023-11-21T01:02:37.556382986",
+    "written_to": [
+      "tback/./tests/big-file.pdf"
     ]
   },
   {
@@ -110,6 +132,28 @@
     ]
   },
   {
+    "key": "0gBH7msouXoFnkzK",
+    "path": "./tests/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:01:35.088654972",
+    "written_to": [
+      "tback/./tests/file2.txt"
+    ]
+  },
+  {
+    "key": "0NE97mspHtaliAP1",
+    "path": "./tests/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:07:20.135639811",
+    "written_to": [
+      "tback/./tests/file1.txt"
+    ]
+  },
+  {
     "key": "pNjN7msl0dQMmU6K",
     "path": "./tests/.config/file2.txt",
     "hash": "",
@@ -121,6 +165,17 @@
     ]
   },
   {
+    "key": "06gK7mspHtam6vC0",
+    "path": "./tests/changed-file.txt",
+    "hash": "",
+    "len": 57,
+    "modified": 1700532440130046,
+    "last_saved": "2023-11-21T02:07:20.136257746",
+    "written_to": [
+      "tback/./tests/changed-file.txt"
+    ]
+  },
+  {
     "key": "LOqI7msl0dQMfjcK",
     "path": "./tests/.config/file1.txt",
     "hash": "",
@@ -129,6 +184,28 @@
     "last_saved": "2023-11-21T01:02:00.553900103",
     "written_to": [
       "tback/./tests/.config/file1.txt"
+    ]
+  },
+  {
+    "key": "qKhx7mspHtamakty",
+    "path": "./tests/.config/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:07:20.136379799",
+    "written_to": [
+      "tback/./tests/.config/file1.txt"
+    ]
+  },
+  {
+    "key": "bSZJ7msouXoFzgVd",
+    "path": "./tests/changed-file.txt",
+    "hash": "",
+    "len": 57,
+    "modified": 1700532095083149,
+    "last_saved": "2023-11-21T02:01:35.089227356",
+    "written_to": [
+      "tback/./tests/changed-file.txt"
     ]
   },
   {
@@ -162,6 +239,17 @@
     "last_saved": "2023-11-21T01:02:37.556051416",
     "written_to": [
       "tback/./tests/file2.txt"
+    ]
+  },
+  {
+    "key": "MCK47mspHtamiVP7",
+    "path": "./tests/.config/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:07:20.136466845",
+    "written_to": [
+      "tback/./tests/.config/file2.txt"
     ]
   },
   {
@@ -258,6 +346,17 @@
     ]
   },
   {
+    "key": "a2tw7mspHtaluIPy",
+    "path": "./tests/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:07:20.135749002",
+    "written_to": [
+      "tback/./tests/file2.txt"
+    ]
+  },
+  {
     "key": "1jiG7msl38fDiLRx",
     "path": "./tests/changed-file.txt",
     "hash": "",
@@ -276,6 +375,17 @@
     "modified": 0,
     "last_saved": null,
     "written_to": []
+  },
+  {
+    "key": "45eV7msouXoGTnuY",
+    "path": "./tests/.config/file1.txt",
+    "hash": "",
+    "len": 186,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:01:35.089400847",
+    "written_to": [
+      "tback/./tests/.config/file1.txt"
+    ]
   },
   {
     "key": "GJYg7mskxeejxMHM",
@@ -297,6 +407,28 @@
     "last_saved": "2023-11-21T01:01:11.830618942",
     "written_to": [
       "tback/./tests/changed-file.txt"
+    ]
+  },
+  {
+    "key": "JBIS7msouXoGZ0lI",
+    "path": "./tests/.config/file2.txt",
+    "hash": "",
+    "len": 19,
+    "modified": 1700331937339576,
+    "last_saved": "2023-11-21T02:01:35.089504300",
+    "written_to": [
+      "tback/./tests/.config/file2.txt"
+    ]
+  },
+  {
+    "key": "ZuvO7mspHtam01v9",
+    "path": "./tests/big-file.pdf",
+    "hash": "",
+    "len": 474707,
+    "modified": 1699990650530503,
+    "last_saved": "2023-11-21T02:07:20.136161875",
+    "written_to": [
+      "tback/./tests/big-file.pdf"
     ]
   },
   {

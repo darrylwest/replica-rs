@@ -100,6 +100,8 @@ impl KeyValueStore {
     /// save the kv to file
     pub fn savedb(&mut self, filename: &str) -> Result<()> {
         info!("save the k/v models as a list to file: {}", filename);
+        // ok, first copy the current to a time-stamped replica.
+
         let list: Vec<FileModel> = self.db.clone().into_values().collect();
         let json = serde_json::to_string_pretty(&list).unwrap();
 
