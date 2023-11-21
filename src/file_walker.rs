@@ -95,24 +95,17 @@ impl FileWalker {
 
     /// if the file path contains an exclude phrase return true, else false
     fn exclude(&self, path: &Path) -> bool {
-        let excludes = vec![
-            ".config/broot".to_string(),
-            ".config/chromium".to_string(),
-            ".config/configstore".to_string(),
-            ".config/dconf".to_string(),
-        ];
-
+        let excludes = &self.config.excludes;
         let name = path.to_str().unwrap().to_string();
 
         for ex in excludes.iter() {
-            println!("check: {} -> {}", name, ex);
             if name.contains(ex.as_str()) {
-                println!("hit: {}", ex);
+                info!("exclude: {} {}", name, ex);
                 return true;
             }
         }
 
-        return false;
+        false
     }
 }
 
@@ -122,9 +115,16 @@ mod tests {
 
     #[test]
     fn excludes() {
+        let excludes = vec![
+            ".config/broot".to_string(),
+            ".config/chromium".to_string(),
+            ".config/configstore".to_string(),
+            ".config/dconf".to_string(),
+        ];
+
         let mut config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
-        config.source_folders = vec![ String::from("/home/dpw/.config")];
-        // config.excludes = ...
+        config.source_folders = vec![String::from("/home/dpw/.config")];
+        config.excludes = excludes.to_owned();
         let walker = FileWalker::new(config.clone());
 
         let path = Path::new("/home/dpw/.config/chromium/thing");
@@ -132,7 +132,6 @@ mod tests {
 
         let path = Path::new(".config/configstore/");
         assert!(walker.exclude(path));
-
     }
 
     #[test]

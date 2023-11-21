@@ -9,6 +9,7 @@ files = [
     "tests/file2.txt",
     "tests/big-file.pdf",
 ]
+excludes = []
 dbfile = ".replica/data/files.json"
 compress = false
 encrypt = false
