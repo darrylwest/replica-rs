@@ -6,5 +6,6 @@ logging_config = "config/console.yaml"
 source_folders = ["photos", "Music", ".local/bin"]
 targets = ["dpw@plaza.local:/Volumes/plaza/tiburon", "dpw@piedmont.local:backup/tiburon", "dpw@orinda.local:.backup/tiburon"]
 files = [ ".alias", ".config", ".motd", ".profile", ".ssh/authorized_keys", ".ssh/id_rsa.pub", ".wget-hsts", ".zprofile", ".zshenv", ".zshrc" ]
+excludes = []
 compress = false
 encrypt = false

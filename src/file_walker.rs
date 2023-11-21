@@ -2,7 +2,7 @@ use crate::config::Config;
 use crate::file_model::FileModel;
 use anyhow::Result;
 use log::{debug, error, info};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 pub struct FileWalker {
@@ -67,7 +67,7 @@ impl FileWalker {
             let fname: PathBuf = [&self.home, folder].iter().collect();
 
             for entry in WalkDir::new(fname).into_iter().filter_map(|e| e.ok()) {
-                if entry.file_name() == ".DS_Store" {
+                if self.exclude(entry.path()) || entry.file_name() == ".DS_Store" {
                     continue;
                 }
 
@@ -92,11 +92,40 @@ impl FileWalker {
 
         Ok(files)
     }
+
+    /// if the file path contains an exclude phrase return true, else false
+    fn exclude(&self, path: &Path) -> bool {
+        let excludes = &self.config.excludes;
+        let name = path.to_str().unwrap().to_string();
+
+        for ex in excludes.iter() {
+            if name.contains(ex.as_str()) {
+                info!("exclude: {} {}", name, ex);
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn excludes() {
+        // [ ".config/broot", ".config/chromium", ".config/configstore", ".config/dconf" ]
+
+        let config = Config::read_config(".test-replica/config/walk-config.toml").unwrap();
+        let walker = FileWalker::new(config.clone());
+
+        let path = Path::new("/home/dpw/.config/chromium/thing");
+        assert!(walker.exclude(path));
+
+        let path = Path::new(".config/configstore/");
+        assert!(walker.exclude(path));
+    }
 
     #[test]
     fn walk_files_and_folders() {
