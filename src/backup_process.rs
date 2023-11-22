@@ -149,6 +149,11 @@ impl BackupProcess {
 
         Ok(())
     }
+
+    /// retrun the UTC time in seconds (unix timestamp.) decode with date -r <seconds>
+    pub fn timestamp(&self) -> u64 {
+        Utc::now().timestamp() as u64
+    }
 }
 
 #[cfg(test)]
@@ -249,5 +254,33 @@ mod tests {
 
         println!("{:?}", response);
         assert!(response.is_some());
+    }
+
+    #[test]
+    fn timestamp() {
+        let path = "tests/";
+        let files = create_filelist();
+
+        let backup = BackupProcess::new(path, files, true);
+
+        let ts = backup.timestamp();
+
+        println!("timestamp: {} = {}", ts, get_now_seconds());
+        assert!(ts > 1_700_604_600);
+        let tss = from_timestamp(ts);
+        println!("{}->{}", ts, tss);
+    }
+
+    fn get_now_seconds() -> u64 {
+        use std::time::SystemTime;
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+    }
+
+    fn from_timestamp(ts: u64) -> String {
+        use chrono::TimeZone;
+        Utc.timestamp_opt(ts as i64, 0).unwrap().to_rfc3339()
     }
 }
