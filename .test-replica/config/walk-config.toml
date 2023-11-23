@@ -15,6 +15,7 @@ excludes = [
     ".config/configstore",
     ".config/dconf",
 ]
+journaled = []
 dbfile = ".replica/data/files.json"
 compress = false
 encrypt = false

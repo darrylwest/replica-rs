@@ -10,6 +10,7 @@ files = [
     "big-file.pdf",
 ]
 excludes = []
+journaled = []
 dbfile = ".replica/data/files.json"
 compress = false
 encrypt = false
