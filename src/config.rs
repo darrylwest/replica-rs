@@ -22,6 +22,8 @@ pub struct Config {
     pub dbfile: String,
     pub compress: bool,
     pub encrypt: bool,
+    pub dryrun: bool,
+    pub verbose: bool,
 }
 
 impl Config {
@@ -53,6 +55,8 @@ impl Config {
             dbfile: self.dbfile.clone(),
             compress: self.compress,
             encrypt: self.encrypt,
+            dryrun: false,
+            verbose: false,
         }
     }
 

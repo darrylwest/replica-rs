@@ -35,9 +35,19 @@ fn cd_app_home(app_home: &str) {
     env::set_current_dir(app_home).unwrap_or_else(|_| panic!("{}", msg));
 }
 
-fn startup(cli: &Cli) -> Config {
-    let config = Config::read_config(cli.config.as_str()).expect("config should initialize");
+/// read the cli to override config dryrun and verbose if false
+fn startup(cli: Cli) -> Config {
+    // println!("cli: {:?}", cli);
+    let mut config = Config::read_config(cli.config.as_str()).expect("config should initialize");
     config.start_logger().expect("logger should start.");
+
+    if !config.dryrun {
+        config.dryrun = cli.dryrun;
+    }
+
+    if !config.verbose {
+        config.verbose = cli.verbose;
+    }
 
     info!("replica config: {:?}", config);
 
@@ -45,12 +55,12 @@ fn startup(cli: &Cli) -> Config {
 }
 
 /// the primary process
-fn run(cli: Cli, config: Config) -> Result<()> {
+fn run(config: Config) -> Result<()> {
     let start_time = Instant::now();
 
     cd_app_home(config.home.as_str());
 
-    if cli.dryrun {
+    if config.dryrun {
         warn!("THIS IS A DRY RUN!");
     }
 
@@ -62,7 +72,7 @@ fn run(cli: Cli, config: Config) -> Result<()> {
         info!("file count: {}", files.len());
 
         let target_dir = &config.targets[0];
-        let backup = BackupProcess::new(target_dir.as_str(), files.clone(), cli.dryrun);
+        let backup = BackupProcess::new(target_dir.as_str(), files.clone(), config.dryrun);
         let results = backup.process(db.clone());
         if results.is_err() {
             error!("backup failed: {:?}", results);
@@ -88,15 +98,31 @@ fn main() -> Result<()> {
     let home = env::var("HOME").expect("The user should have a home folder.");
     cd_app_home(home.as_str());
 
-    let cli = Cli::parse();
-    let config = startup(&cli);
-    run(cli, config)
+    let config = startup(Cli::parse());
+    run(config)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::{fs::File, io::Write};
+
+    // returns the default cli struct
+    fn get_conf_path() -> String {
+        let test_home = env::current_dir().expect("should get the current working directory");
+        format!(
+            "{}/.test-replica/config/run-config.toml",
+            test_home.to_str().unwrap()
+        )
+    }
+
+    fn dflt_cli() -> Cli {
+        Cli {
+            config: get_conf_path(),
+            verbose: false,
+            dryrun: false,
+        }
+    }
 
     fn change_file() {
         let filename = "tests/changed-file.txt";
@@ -107,20 +133,9 @@ mod tests {
 
     #[test]
     fn startup_test() {
-        let test_home = env::current_dir().expect("should get the current working directory");
-        let conf_path = format!(
-            "{}/.test-replica/config/run-config.toml",
-            test_home.to_str().unwrap()
-        );
+        let cli = dflt_cli();
 
-        let cli = Cli {
-            config: conf_path,
-            verbose: false,
-            dryrun: false,
-        };
-
-        let config = startup(&cli);
-        println!("cli: {:?}", cli);
+        let config = startup(cli);
         println!("ctx: {:?}", config);
 
         assert!(true);
@@ -129,40 +144,24 @@ mod tests {
     #[test]
     fn run_test() {
         change_file();
-        let test_home = env::current_dir().expect("should get the current working directory");
-        let conf_path = format!(
-            "{}/.test-replica/config/run-config.toml",
-            test_home.to_str().unwrap()
-        );
+        let conf_path = get_conf_path();
         let config = Config::read_config(conf_path.as_str()).unwrap();
 
         println!("conf path : {:?}", conf_path);
-        let cli = Cli {
-            config: conf_path,
-            verbose: false,
-            dryrun: false,
-        };
+        let cli = dflt_cli();
         println!("{:?}", cli);
-        let results = run(cli, config);
+        let results = run(config);
         assert!(results.is_ok());
     }
 
     #[test]
     fn run_test_dryrun() {
-        let test_home = env::current_dir().expect("should get the current working directory");
-        let conf_path = format!(
-            "{}/.test-replica/config/run-config.toml",
-            test_home.to_str().unwrap()
-        );
-        let config = Config::read_config(conf_path.as_str()).unwrap();
+        let conf_path = get_conf_path();
+        let mut config = Config::read_config(conf_path.as_str()).unwrap();
+        config.verbose = true;
+        config.dryrun = true;
         println!("conf path : {:?}", conf_path);
-        let cli = Cli {
-            config: conf_path,
-            verbose: true,
-            dryrun: true,
-        };
-        println!("{:?}", cli);
-        let results = run(cli, config);
+        let results = run(config);
         println!("{:?}", results);
         assert!(results.is_ok());
     }

@@ -18,3 +18,5 @@ excludes = [
 dbfile = ".replica/data/files.json"
 compress = false
 encrypt = false
+dryrun = false
+verbose = false
