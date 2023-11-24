@@ -11,6 +11,9 @@ files = [
     "tests/changed-file.txt",
 ]
 excludes = []
+journaled = []
 dbfile = ".test-replica/data/run2-file.json"
 compress = false
 encrypt = false
+dryrun = false
+verbose = false

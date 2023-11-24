@@ -19,9 +19,12 @@ pub struct Config {
     pub targets: Vec<String>,
     pub files: Vec<String>,
     pub excludes: Vec<String>,
+    pub journaled: Vec<String>,
     pub dbfile: String,
     pub compress: bool,
     pub encrypt: bool,
+    pub dryrun: bool,
+    pub verbose: bool,
 }
 
 impl Config {
@@ -50,9 +53,12 @@ impl Config {
             targets: self.targets.clone(),
             files: self.files.clone(),
             excludes: self.excludes.clone(),
+            journaled: self.journaled.clone(),
             dbfile: self.dbfile.clone(),
             compress: self.compress,
             encrypt: self.encrypt,
+            dryrun: false,
+            verbose: false,
         }
     }
 
