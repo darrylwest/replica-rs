@@ -8,7 +8,7 @@ use crate::file_model::FileModel;
 use crate::kv_store::KeyValueStore;
 use anyhow::{anyhow, Result};
 use chrono::Utc;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -31,6 +31,16 @@ impl BackupProcess {
             target: PathBuf::from(tp),
             files,
             dryrun,
+        }
+    }
+
+    /// return true if the target exists, else false
+    pub fn target_exists(&self) -> bool {
+        if self.target.exists() && self.target.is_dir() {
+            true
+        } else {
+            warn!("Target does not exist.");
+            false
         }
     }
 
