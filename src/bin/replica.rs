@@ -151,11 +151,14 @@ mod tests {
     fn run_test() {
         change_file();
         let conf_path = get_conf_path();
-        let config = Config::read_config(conf_path.as_str()).unwrap();
-
         println!("conf path : {:?}", conf_path);
+
+        let config = Config::read_config(conf_path.as_str()).unwrap();
+        println!("conf: {:?}", config);
+
         let cli = dflt_cli();
         println!("{:?}", cli);
+
         let results = run(config);
         assert!(results.is_ok());
     }
