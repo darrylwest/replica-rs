@@ -13,7 +13,7 @@ os := `uname`
 # run the standard tests
 test:
     clear
-    /bin/rm -fr tests/tback-tmp tback
+    /bin/rm -fr tests/tback-tmp
     cargo test
     just restore
 
@@ -21,7 +21,7 @@ test:
 # run the standard tests + clippy and fmt
 test-all:
     clear
-    /bin/rm -fr tests/tback-tmp tback
+    /bin/rm -fr tests/tback-tmp
     cargo test -- --include-ignored && just format
     just restore
 
@@ -31,7 +31,7 @@ restore:
 
 # clean the project
 clean:
-    /bin/rm -fr tests/tback-tmp tback
+    /bin/rm -fr tests/tback-tmp
     cargo clean
 
 # build the debug target
@@ -62,7 +62,7 @@ watch:
 
 # cover - runs code test coverage report and writes to coverage folder
 cover:
-    /bin/rm -fr tests/tback-tmp tback
+    /bin/rm -fr tests/tback-tmp
     cargo tarpaulin --out html --output-dir coverage && mv coverage/tarpaulin-report.html coverage/index.html
     just restore
 
