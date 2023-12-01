@@ -2,7 +2,10 @@ name = "test-replica"
 version = "0.1.1"
 home = "./"
 logging_config = ".replica/config/console.yaml"
-targets = ["tback"]
+targets = [
+    "tback",
+    "qback",
+]
 source_folders = [ ".config" ]
 files = [ 
     "file1.txt",
