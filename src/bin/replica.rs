@@ -71,17 +71,23 @@ fn run(config: Config) -> Result<()> {
     if let Ok(files) = walker.walk_files_and_folders() {
         info!("file count: {}", files.len());
 
-        let target_dir = &config.targets[0];
-        let backup = BackupProcess::new(target_dir.as_str(), files.clone(), config.dryrun);
-        let results = backup.process(db.clone());
-        if results.is_err() {
-            error!("backup failed: {:?}", results);
-        } else {
-            db = results.unwrap();
-            if db.is_dirty() {
-                let resp = db.savedb(config.dbfile.as_str());
-                if resp.is_err() {
-                    error!("database save failed: {:?}", resp);
+        // loop over the target dirs; if the target exists, then try to backup to it.  if not, then warn
+        for target_dir in config.targets {
+            let backup = BackupProcess::new(target_dir.as_str(), files.clone(), config.dryrun);
+            if !backup.target_exists() {
+                continue;
+            }
+
+            let results = backup.process(db.clone());
+            if results.is_err() {
+                error!("backup failed: {:?}", results);
+            } else {
+                db = results.unwrap();
+                if db.is_dirty() {
+                    let resp = db.savedb(config.dbfile.as_str());
+                    if resp.is_err() {
+                        error!("database save failed: {:?}", resp);
+                    }
                 }
             }
         }
