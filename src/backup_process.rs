@@ -39,7 +39,7 @@ impl BackupProcess {
         if self.target.exists() && self.target.is_dir() {
             true
         } else {
-            warn!("Target does not exist.");
+            warn!("Target {:?} does not exist.", self.target);
             false
         }
     }
